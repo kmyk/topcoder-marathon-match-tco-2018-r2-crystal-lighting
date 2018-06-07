@@ -851,7 +851,8 @@ public class CrystalLightingVis {
         if (exec != null) {
             try {
                 Runtime rt = Runtime.getRuntime();
-                proc = rt.exec(exec);
+                String[] envp = { "SEED=" + seed };
+                proc = rt.exec(exec, envp);
                 os = proc.getOutputStream();
                 is = proc.getInputStream();
                 br = new BufferedReader(new InputStreamReader(is));
