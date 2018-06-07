@@ -67,3 +67,48 @@ forumにてRYBは減法混合の原色だが光は加法混合されるし実際
 ### 2018年  6月  7日 木曜日 10:53:11 JST
 
 数学
+
+## 2018年  6月  7日 木曜日 12:56:04 JST
+
+うまくフローにできないか。
+光源や障害物の位置だけ固定した上で色だけ流すとか。
+位置の固定したらもう残りはDPで最適解でたりしそう。
+
+### 2018年  6月  7日 木曜日 18:49:26 JST
+
+研究が哲学に寄りつつあるような
+
+### 2018年  6月  7日 木曜日 19:43:24 JST
+
+退路断ち
+
+### 2018年  6月  7日 木曜日 20:20:35 JST
+
+今回の誤読
+
+>   Item 0: A lantern should not be illuminated by any light ray.
+
+### 2018年  6月  7日 木曜日 20:38:19 JST
+
+雑貪欲 [60f38094b24f96927de73689a9edd68a5aa60d5a](https://github.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/commit/60f38094b24f96927de73689a9edd68a5aa60d5a)
+
+![11.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.60f38094b24f96927de73689a9edd68a5aa60d5a.png?token=ACGd-HrrN-fy38ORtN9iIzN1mi3fXaITks5bIlVdwA%3D%3D)
+
+<details>
+<summary>順位表 60f38094b24f96927de73689a9edd68a5aa60d5a</summary>
+
+| Handle      | Score      | Rank  | Last Submission Time     | Language  | Example Tests  | Submissions  |
+|-------------|------------|-------|--------------------------|-----------|----------------|--------------|
+| nika        | 996428.57  | 1     | 06.07.2018 06:18:19 EST  | C++       | 1              | 2            |
+| CatalinT    | 860714.29  | 2     | 06.07.2018 03:49:38 EST  | C++       | 1              | 1            |
+| RafbillFr   | 700000.00  | 3     | 06.07.2018 05:49:21 EST  | C++       | 1              | 1            |
+| JacoCronje  | 578571.43  | 4     | 06.07.2018 05:53:51 EST  | C++       | 2              | 1            |
+| kimiyuki    | 372142.86  | 5     | 06.07.2018 07:37:10 EST  | C++       | 1              | 2            |
+| yowa        | 268571.43  | 6     | 06.06.2018 23:34:08 EST  | C++       | 1              | 1            |
+| ktuan       | 223571.43  | 7     | 06.07.2018 05:40:39 EST  | C++       | 1              | 1            |
+| fetetriste  | 0.00       | 8     | 06.07.2018 07:29:41 EST  | Java      | 1              | 1            |
+| keymoon     | -          | -     | -                        | -         | 1              | 0            |
+
+</details>
+
+secondary colorsの水晶を使うのは貪欲だと難しいようだ
