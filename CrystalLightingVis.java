@@ -694,6 +694,12 @@ public class CrystalLightingVis {
             yText += hText;
             drawString(g2,"Incorrect:",xText,yText,wText*2/3,hText,1);
             drawString(g2,String.valueOf(numIncorrect),xText+wText*2/3+2,yText,wText/3,hText,-1);
+            yText += hText * 2;
+
+            // seed value
+            drawString(g2,"SEED",xText,yText,wText,hText,0);
+            yText += hText;
+            drawString(g2,seed,xText,yText,wText,hText,0);
 
             if (save) {
                 try {
