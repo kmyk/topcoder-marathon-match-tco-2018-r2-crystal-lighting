@@ -447,6 +447,15 @@ public class CrystalLightingVis {
         os.write(sb.toString().getBytes());
         os.flush();
 
+        // write input to file
+        File file = new File("test/" + seed + ".in");
+        if (! file.exists()) {
+            file.getParentFile().mkdirs();
+            FileWriter writer = new FileWriter(file);
+            writer.write(sb.toString());
+            writer.close();
+        }
+
         // and get the return value
         int N = Integer.parseInt(br.readLine());
         String[] ret = new String[N];
