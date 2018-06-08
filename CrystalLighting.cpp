@@ -79,10 +79,88 @@ typedef tuple<int, int, char> output_t;
 struct cost_t { int lantern, mirror, obstacle; };
 struct max_t { int mirrors, obstacles; };
 
+constexpr int C_DEAD_CRYSTAL = '8';
+constexpr int C_LANTERN = 'L';
 
 /******************************************************************************
  * functions
  ******************************************************************************/
+
+bool check_letter_constraints(string const & board, string const & letters) {
+    set<char> x(ALL(board));
+    set<char> y(ALL(letters));
+    return includes(ALL(y), ALL(x));
+}
+
+vector<string> get_neighborhoods(int h, int w, string const & board) {
+    vector<string> neighborhoods(h * w);
+    REP (y, h) REP (x, w) {
+        REP (dir, 4) {
+            int ny = y + neighborhood4_y[dir];
+            int nx = x + neighborhood4_x[dir];
+            if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
+            neighborhoods[y * w + x] += board[ny * w + nx];
+        }
+    }
+    return neighborhoods;
+}
+
+/**
+ * @brief replace dead lanterns with C_DEAD_CRYSTAL
+ */
+string remove_impossible_crystals(int h, int w, string board) {
+    assert (check_letter_constraints(board, ".X123456"));
+    vector<string> neighborhoods = get_neighborhoods(h, w, board);
+    REP (y, h) REP (x, w) {
+        char c = board[y * w + x];
+        if (isdigit(c)) {
+            int cnt = count(ALL(neighborhoods[y * w + x]), C_EMPTY);
+            if (cnt < __builtin_popcount(c - '0')) {
+                board[y * w + x] = cnt ? C_DEAD_CRYSTAL : C_OBSTACLE;
+            }
+        }
+    }
+    return board;
+}
+
+/**
+ * @brief fill unused areas with C_OBSTACLE
+ */
+string fill_unused_area(int h, int w, string board) {
+    assert (check_letter_constraints(board, ".X1234568"));
+    vector<bool> used(h * w);
+    REP (z, h * w) if (board[z] == C_OBSTACLE) {
+        used[z] = true;
+    }
+    vector<pair<int, int> > acc;
+    bool has_crystal;
+    function<void (int, int)> go = [&](int y, int x) {
+        char c = board[y * w + x];
+        if (isdigit(c) and c != C_DEAD_CRYSTAL) has_crystal = true;
+        used[y * w + x] = true;
+        acc.emplace_back(y, x);
+        REP (dir, 4) {
+            int ny = y + neighborhood4_y[dir];
+            int nx = x + neighborhood4_x[dir];
+            if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
+            if (not used[ny * w + nx]) {
+                go(ny, nx);
+            }
+        }
+    };
+    REP (y, h) REP (x, w) if (not used[y * w + x]) {
+        acc.clear();
+        has_crystal = false;
+        go(y, x);
+        if (not has_crystal) {
+            for (auto pos : acc) {
+                int y, x; tie(y, x) = pos;
+                board[y * w + x] = C_OBSTACLE;
+            }
+        }
+    }
+    return board;
+}
 
 vector<pair<int, int> > list_crystals(int h, int w, string const & board) {
     vector<pair<int, int> > crystals;
@@ -117,8 +195,7 @@ pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int d
     return make_pair(y, x);
 }
 
-int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<pair<int, int> > const & crystals, vector<output_t> const & commands) {
-    constexpr int C_LANTERN = 'l';
+int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<output_t> const & commands) {
     constexpr int MINUS_INF = - 1000000;
     int count_lanterns = 0;
     int count_mirrors = 0;
@@ -161,8 +238,7 @@ int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<pa
     score -= count_lanterns * cost.lantern;
     score -= count_mirrors * cost.mirror;
     score -= count_obstacles * cost.obstacle;
-    for (auto const & pos : crystals) {
-        int y, x; tie(y, x) = pos;
+    REP (y, h) REP (x, w) if (isdigit(board[y * w + x])) {
         char l = lit[y * w + x];
         if (l) {
             char b = board[y * w + x];
@@ -177,11 +253,22 @@ int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<pa
  * the main function
  ******************************************************************************/
 
-vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t max_) {
+vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
     double clock_begin = rdtsc();
     random_device device;
     xor_shift_128 gen(device());
 
+    // remove unnecessary items
+    board = remove_impossible_crystals(h, w, board);
+    board = fill_unused_area(h, w, board);
+#ifdef LOCAL
+    REP (y, h) {
+        REP (x, w) {
+            cerr << board[y * w + x];
+        }
+        cerr<< endl;
+    }
+#endif
     vector<pair<int, int> > crystals = list_crystals(h, w, board);
 
     // result of SA
@@ -199,7 +286,7 @@ vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t ma
     double sa_clock_end = clock_begin + TLE * 0.95;
 
     auto try_update = [&]() {
-        int next_score = compute_score(h, w, board, cost, max_, crystals, cur);
+        int next_score = compute_score(h, w, board, cost, max_, cur);
         int delta = next_score - score;
         if (delta >= 0 or bernoulli_distribution(exp(delta / temperature))(gen)) {
             score = next_score;
@@ -271,7 +358,7 @@ vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t ma
     int num_empty = count(ALL(board), C_EMPTY);
     int num_obstacles = count(ALL(board), C_OBSTACLE);
     int num_crystals = h * w - num_obstacles - num_empty;
-    int raw_score = compute_score(h, w, board, cost, max_, crystals, result);
+    int raw_score = compute_score(h, w, board, cost, max_, result);
     double elapsed = rdtsc() - clock_begin;
     cerr << "{\"seed\":" << seed;
     cerr << ",\"H\":" << h;
