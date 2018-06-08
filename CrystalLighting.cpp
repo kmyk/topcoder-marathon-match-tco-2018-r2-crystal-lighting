@@ -299,7 +299,7 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
 
     // state of SA
     vector<output_t> cur;
-    int score = 0;
+    result_info_t info = compute_result_info(h, w, board, cost, max_, cur);
 
     // misc values
     int iteration = 0;
@@ -307,16 +307,21 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
     double sa_clock_begin = rdtsc();
     double sa_clock_end = clock_begin + TLE * 0.95;
 
+    auto evaluate = [&](result_info_t const & info) {
+        return info.score + max(0.0, temperature - 0.1) * info.crystals_secondary_partial * 40;
+    };
     auto try_update = [&]() {
-        int next_score = compute_score(h, w, board, cost, max_, cur);
-        int delta = next_score - score;
+        result_info_t next_info = compute_result_info(h, w, board, cost, max_, cur);
+        if (highscore < next_info.score) {
+            result = cur;
+            highscore = next_info.score;
+            cerr << "highscore = " << highscore << "  (at " << iteration << ", " << temperature << ")" << endl;
+        }
+        double evaluated = evaluate(info);
+        double next_evaluated = evaluate(next_info);
+        int delta = next_evaluated - evaluated;
         if (delta >= 0 or bernoulli_distribution(exp(delta / temperature))(gen)) {
-            score = next_score;
-            if (highscore < score) {
-                result = cur;
-                highscore = score;
-		cerr << "highscore = " << score << "  (at " << iteration << ", " << temperature << ")" << endl;
-            }
+            info = next_info;
             return true;
         } else {
             return false;
