@@ -267,9 +267,22 @@ vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t ma
 #ifdef LOCAL
     if (getenv("SEED")) seed = atoll(getenv("SEED"));
 #endif
+    int num_empty = count(ALL(board), C_EMPTY);
+    int num_obstacles = count(ALL(board), C_OBSTACLE);
+    int num_crystals = h * w - num_obstacles - num_empty;
     int raw_score = compute_score(h, w, board, cost, max_, crystals, result);
     double elapsed = rdtsc() - clock_begin;
     cerr << "{\"seed\":" << seed;
+    cerr << ",\"H\":" << h;
+    cerr << ",\"W\":" << w;
+    cerr << ",\"costLantern\":" << cost.lantern;
+    cerr << ",\"costMirror\":" << cost.mirror;
+    cerr << ",\"costObstacle\":" << cost.obstacle;
+    cerr << ",\"maxMirrors\":" << max_.mirrors;
+    cerr << ",\"maxObstacles\":" << max_.obstacles;
+    cerr << ",\"numEmpty\":" << num_empty;
+    cerr << ",\"numObstacles\":" << num_obstacles;
+    cerr << ",\"numCrystals\":" << num_crystals;
     cerr << ",\"raw_score\":" << raw_score;
     cerr << ",\"iteration\":" << iteration;
     cerr << ",\"elapsed\":" << elapsed;
