@@ -38,5 +38,6 @@ size := 100
 score: a.out tester.jar
 	-mkdir log
 	cp a.out log/${timestamp}.bin
-	echo 'data="$$(java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed $$1 | tee /dev/stderr | grep '\''{"seed":'\'')" ; flock log/${timestamp}.lock echo "$$data" >> log/${timestamp}.json' > log/${timestamp}.sh
+	echo 'data="$$(java -jar tester.jar -exec ./log/${timestamp}.bin -debug -novis -seed $$1 | tee /dev/stderr | grep '\''{"seed":'\'')" ; flock log/${timestamp}.lock echo "$$data" >> log/${timestamp}.json' > log/${timestamp}.sh
 	parallel -- bash log/${timestamp}.sh {} ::: $$(seq ${size})
+	python3 stat-results.py table log/${timestamp}.json
