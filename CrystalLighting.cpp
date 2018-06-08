@@ -315,7 +315,9 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         if (highscore < next_info.score) {
             result = cur;
             highscore = next_info.score;
+#ifdef LOCAL
             cerr << "highscore = " << highscore << "  (at " << iteration << ", " << temperature << ")" << endl;
+#endif
         }
         double evaluated = evaluate(info);
         double next_evaluated = evaluate(next_info);
