@@ -84,6 +84,16 @@ struct max_t { int mirrors, obstacles; };
  * functions
  ******************************************************************************/
 
+vector<pair<int, int> > list_crystals(int h, int w, string const & board) {
+    vector<pair<int, int> > crystals;
+    REP (y, h) REP (x, w) {
+        if (isdigit(board[y * w + x])) {
+            crystals.emplace_back(y, x);
+        }
+    }
+    return crystals;
+}
+
 pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int dy, int dx) {
     while (true) {
         y += dy;
@@ -107,24 +117,31 @@ pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int d
     return make_pair(y, x);
 }
 
-int compute_score(int h, int w, string board, cost_t cost, vector<output_t> const & commands) {
+int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<pair<int, int> > const & crystals, vector<output_t> const & commands) {
     constexpr int C_LANTERN = 'l';
-    int acc = 0;
+    constexpr int MINUS_INF = - 1000000;
+    int count_lanterns = 0;
+    int count_mirrors = 0;
+    int count_obstacles = 0;
     for (output_t command : commands) {
         int y, x; char c; tie(y, x, c) = command;
+        if (y < 0 or h <= y or x < 0 or w <= x) return MINUS_INF;  // You can only place items within the board.
+        if (board[y * w + x] != C_EMPTY) return MINUS_INF;  // You can only place items on empty cells of the board. / You can not place two items on the same cell.
         if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
+            ++ count_lanterns;
             board[y * w + x] = C_LANTERN;
-            acc -= cost.lantern;
         } else if (c == C_MIRROR1 or c == C_MIRROR2) {
             board[y * w + x] = c;
-            acc -= cost.mirror;
+            ++ count_mirrors;
         } else if (c == C_OBSTACLE) {
             board[y * w + x] = c;
-            acc -= cost.obstacle;
+            ++ count_obstacles;
         } else {
-            assert (false);
+            assert (false);  // Invalid item type
         }
     }
+    if (count_mirrors > max_.mirrors) return MINUS_INF;  // You can place at most ??? mirrors.
+    if (count_obstacles > max_.obstacles) return MINUS_INF;  // You can place at most ??? obstacles.
     vector<char> lit(h * w);
     for (output_t command : commands) {
         int y, x; char c; tie(y, x, c) = command;
@@ -135,18 +152,24 @@ int compute_score(int h, int w, string board, cost_t cost, vector<output_t> cons
                 if (isdigit(board[ny * w + nx])) {
                     lit[ny * w + nx] |= (c - '0');
                 } else if (board[ny * w + nx] == C_LANTERN) {
-                    return - 1000000;  // A lantern should not be illuminated by any light ray.
+                    return MINUS_INF;  // A lantern should not be illuminated by any light ray.
                 }
             }
         }
     }
-    REP (y, h) REP (x, w) if (isdigit(board[y * w + x])) {
+    int score = 0;
+    score -= count_lanterns * cost.lantern;
+    score -= count_mirrors * cost.mirror;
+    score -= count_obstacles * cost.obstacle;
+    for (auto const & pos : crystals) {
+        int y, x; tie(y, x) = pos;
         char l = lit[y * w + x];
         if (l) {
-            acc += (l == board[y * w + x] - '0' ? 10 + 10 * __builtin_popcount(l) : - 10);
+            char b = board[y * w + x];
+            score += (l == b - '0' ? 10 + 10 * __builtin_popcount(l) : - 10);
         }
     }
-    return acc;
+    return score;
 }
 
 
@@ -159,23 +182,84 @@ vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t ma
     random_device device;
     xor_shift_128 gen(device());
 
-    vector<output_t> commands;
-    int count_mirrors = 0;
-    int count_obstacles = 0;
+    vector<pair<int, int> > crystals = list_crystals(h, w, board);
+
+    // result of SA
+    vector<output_t> result;
+    int highscore = 0;
+
+    // state of SA
+    vector<output_t> cur;
     int score = 0;
-    REP (y, h) REP (x, w) if (board[y * w + x] == C_EMPTY) {
-        for (char c : { C_MIRROR1, C_MIRROR2, C_OBSTACLE, C_BLUE, C_YELLOW, C_RED }) {
-            if ((c == C_MIRROR1 or c == C_MIRROR2) and count_mirrors == max_.mirrors) continue;
-            if (c == C_OBSTACLE and count_obstacles == max_.obstacles) continue;
-            commands.emplace_back(y, x, c);
-            int next_score = compute_score(h, w, board, cost, commands);
-            if (score < next_score) {
-                score = next_score;
-                if (c == C_MIRROR1 or c == C_MIRROR2) ++ count_mirrors;
-                if (c == C_OBSTACLE) ++ count_obstacles;
-                break;
+
+    // misc values
+    int iteration = 0;
+    double temperature = 1;
+    double sa_clock_begin = rdtsc();
+    double sa_clock_end = clock_begin + TLE * 0.95;
+
+    auto try_update = [&]() {
+        int next_score = compute_score(h, w, board, cost, max_, crystals, cur);
+        if (score <= next_score) {
+            score = next_score;
+            if (highscore < score) {
+                result = cur;
+                highscore = score;
+		cerr << "highscore = " << score << "  (at " << iteration << ", " << temperature << ")" << endl;
             }
-            commands.pop_back();
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    for (; ; ++ iteration) {
+        if (temperature < 0.1 or iteration % 128 == 0) {
+            double t = rdtsc();
+            if (t > sa_clock_end) break;
+            temperature = 1 - (t - sa_clock_begin) / (sa_clock_end - sa_clock_begin);
+        }
+        int prob = uniform_int_distribution<int>(0, 99)(gen);
+        static const array<char, 6> item_table = { C_BLUE, C_YELLOW, C_RED, C_MIRROR1, C_MIRROR2, C_OBSTACLE };
+
+        if (prob < 50) {  // move one
+            if (cur.empty()) continue;
+            int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
+            int dir = uniform_int_distribution<int>(0, 4 - 1)(gen);
+            get<0>(cur[i]) += neighborhood4_y[dir];
+            get<1>(cur[i]) += neighborhood4_x[dir];
+            if (not try_update()) {
+                get<0>(cur[i]) -= neighborhood4_y[dir];
+                get<1>(cur[i]) -= neighborhood4_x[dir];
+            }
+
+        } else if (prob < 60) {  // modify one
+            if (cur.empty()) continue;
+            int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
+            char c = item_table[uniform_int_distribution<int>(0, item_table.size() - 1)(gen)];
+            swap(get<2>(cur[i]), c);
+            if (not try_update()) {
+                swap(get<2>(cur[i]), c);
+            }
+
+        } else if (prob < 80) {  // remove one
+            if (cur.empty()) continue;
+            int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
+            swap(cur[i], cur.back());
+            auto preserved = cur.back();
+            cur.pop_back();
+            if (not try_update()) {
+                cur.push_back(preserved);
+            }
+
+        } else {  // add one
+            int y = uniform_int_distribution<int>(0, h - 1)(gen);
+            int x = uniform_int_distribution<int>(0, w - 1)(gen);
+            char c = item_table[uniform_int_distribution<int>(0, item_table.size() - 1)(gen)];
+            cur.emplace_back(y, x, c);
+            if (not try_update()) {
+                cur.pop_back();
+            }
         }
     }
 
@@ -183,13 +267,14 @@ vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t ma
 #ifdef LOCAL
     if (getenv("SEED")) seed = atoll(getenv("SEED"));
 #endif
-    int raw_score = compute_score(h, w, board, cost, commands);
+    int raw_score = compute_score(h, w, board, cost, max_, crystals, result);
     double elapsed = rdtsc() - clock_begin;
     cerr << "{\"seed\":" << seed;
     cerr << ",\"raw_score\":" << raw_score;
+    cerr << ",\"iteration\":" << iteration;
     cerr << ",\"elapsed\":" << elapsed;
     cerr << "}" << endl;
-    return commands;
+    return result;
 }
 
 
