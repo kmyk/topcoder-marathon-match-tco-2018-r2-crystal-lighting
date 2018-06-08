@@ -43,21 +43,19 @@ def main():
         print(s)
 
     elif args.what == 'summary':
-        print('average of average reference delta =', df['average_reference_delta'].mean())
-        print('median of average reference delta =', df['average_reference_delta'].median())
-        print('minimum of average reference delta =', df['average_reference_delta'].min())
+        print('average of raw score =', df['raw_score'].mean())
 
     elif args.what == 'compare':
         if args.compare is None:
             parser.error('the following arguments are required: --compare')
         df1 = df
         df2 = load_list_of_json_file(args.compare)
-        df1 = df1.rename(columns={ 'NJ': 'NJ1', 'average_reference_delta': 'ave_delta_1' })
-        df2 = df2.rename(columns={ 'NJ': 'NJ2', 'average_reference_delta': 'ave_delta_2' })
-        df = df1.join(df2[ [ 'NJ2', 'ave_delta_2' ] ])
-        df = df.assign(ave_delta_diff=lambda row: row.ave_delta_1 - row.ave_delta_2)
-        df = df.sort_values(by='ave_delta_diff')
-        headers = [ 'seed', 'S', 'NC', 'junction_cost', 'failure_probability', 'reference_score', 'NJ1', 'ave_delta_1', 'NJ2', 'ave_delta_2', 'ave_delta_diff' ]
+        df1 = df1.rename(columns={ 'raw_score': 'raw_score_1' })
+        df2 = df2.rename(columns={ 'raw_score': 'raw_score_2' })
+        df = df1.join(df2[ [ 'raw_score_2' ] ])
+        df = df.assign(raw_score_diff=lambda row: row.raw_score_1 - row.raw_score_2)
+        df = df.sort_values(by='raw_score_diff')
+        headers = list(df.columns)
         for key in list(df.columns):
             if key not in headers:
                 df = df.drop(key, axis=1)
@@ -66,24 +64,6 @@ def main():
         lines[1] = lines[1].replace('+', '|')
         s = '\n'.join(lines)
         print(s)
-
-    elif args.what.endswith('plot'):
-        if args.what == 'pairplot':
-            sns.pairplot(df, vars='S NC junction_cost failure_probability reference_score NJ average_reference_delta'.split())
-        elif args.what == 'distplot':
-            if args.seed is not None:
-                try:
-                    sns.distplot(df.ix[args.seed]['delta_samples'])
-                except np.linalg.linalg.LinAlgError:
-                    sns.distplot(df.ix[args.seed]['delta_samples'], kde=False)
-            else:
-                sns.distplot(df['average_reference_delta'], norm_hist=False, vertical=True, kde=False)
-        else:
-            assert False
-        if args.save:
-            plt.savefig(args.save)
-        else:
-            plt.show()
 
     else:
         assert False
