@@ -200,7 +200,8 @@ vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t ma
 
     auto try_update = [&]() {
         int next_score = compute_score(h, w, board, cost, max_, crystals, cur);
-        if (score <= next_score) {
+        int delta = next_score - score;
+        if (delta >= 0 or bernoulli_distribution(exp(delta / temperature))(gen)) {
             score = next_score;
             if (highscore < score) {
                 result = cur;
