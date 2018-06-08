@@ -29,6 +29,10 @@ standings:
 		column -t -s , | \
 		sed 's/\( \+\)|\?/\1| /g ; s/^/| / ; s/.$$// ; y/~/ / ; 1 { p ; s/[^|]/-/g }'
 
+image/11: a.out tester.jar
+	java -jar tester.jar -exec ./a.out -debug -plain -mark -rays -seed 11 -save -size 32
+	optipng 11.png
+
 timestamp := $(shell date +%s)
 size := 100
 score: a.out tester.jar
