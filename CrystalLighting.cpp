@@ -55,7 +55,7 @@ const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 
 
 /******************************************************************************
- * utilities
+ * constants
  ******************************************************************************/
 
  constexpr int MAX_H = 100;
@@ -76,9 +76,125 @@ const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 
 typedef tuple<int, int, char> output_t;
 
+struct cost_t { int lantern, mirror, obstacle; };
+struct max_t { int mirrors, obstacles; };
+
 
 /******************************************************************************
- * functions to prepare things
+ * functions
+ ******************************************************************************/
+
+pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int dy, int dx) {
+    while (true) {
+        y += dy;
+        x += dx;
+        if (y < 0 or h <= y or x < 0 or w <= x) {
+            y = x = -1;
+            break;
+        }
+        if (board[y * w + x] == C_EMPTY) {
+            // nop
+        } else if (board[y * w + x] == C_MIRROR1) {
+            dy *= -1;
+            dx *= -1;
+            swap(dy, dx);
+        } else if (board[y * w + x] == C_MIRROR2) {
+            swap(dy, dx);
+        } else {
+            break;
+        }
+    }
+    return make_pair(y, x);
+}
+
+int compute_score(int h, int w, string board, cost_t cost, vector<output_t> const & commands) {
+    constexpr int C_LANTERN = 'l';
+    int acc = 0;
+    for (output_t command : commands) {
+        int y, x; char c; tie(y, x, c) = command;
+        if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
+            board[y * w + x] = C_LANTERN;
+            acc -= cost.lantern;
+        } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+            board[y * w + x] = c;
+            acc -= cost.mirror;
+        } else if (c == C_OBSTACLE) {
+            board[y * w + x] = c;
+            acc -= cost.obstacle;
+        } else {
+            assert (false);
+        }
+    }
+    vector<char> lit(h * w);
+    for (output_t command : commands) {
+        int y, x; char c; tie(y, x, c) = command;
+        if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
+            REP (i, 4) {
+                int ny, nx; tie(ny, nx) = shoot_ray(h, w, board, y, x, neighborhood4_y[i], neighborhood4_x[i]);
+                if (ny == -1) continue;
+                if (isdigit(board[ny * w + nx])) {
+                    lit[ny * w + nx] |= (c - '0');
+                } else if (board[ny * w + nx] == C_LANTERN) {
+                    return - 1000000;  // A lantern should not be illuminated by any light ray.
+                }
+            }
+        }
+    }
+    REP (y, h) REP (x, w) if (isdigit(board[y * w + x])) {
+        char l = lit[y * w + x];
+        if (l) {
+            acc += (l == board[y * w + x] - '0' ? 10 + 10 * __builtin_popcount(l) : - 10);
+        }
+    }
+    return acc;
+}
+
+
+/******************************************************************************
+ * the main function
+ ******************************************************************************/
+
+vector<output_t> solve(int h, int w, string const & board, cost_t cost, max_t max_) {
+    double clock_begin = rdtsc();
+    random_device device;
+    xor_shift_128 gen(device());
+
+    vector<output_t> commands;
+    int count_mirrors = 0;
+    int count_obstacles = 0;
+    int score = 0;
+    REP (y, h) REP (x, w) if (board[y * w + x] == C_EMPTY) {
+        for (char c : { C_MIRROR1, C_MIRROR2, C_OBSTACLE, C_BLUE, C_YELLOW, C_RED }) {
+            if ((c == C_MIRROR1 or c == C_MIRROR2) and count_mirrors == max_.mirrors) continue;
+            if (c == C_OBSTACLE and count_obstacles == max_.obstacles) continue;
+            commands.emplace_back(y, x, c);
+            int next_score = compute_score(h, w, board, cost, commands);
+            if (score < next_score) {
+                score = next_score;
+                if (c == C_MIRROR1 or c == C_MIRROR2) ++ count_mirrors;
+                if (c == C_OBSTACLE) ++ count_obstacles;
+                break;
+            }
+            commands.pop_back();
+        }
+    }
+
+    ll seed = -1;
+#ifdef LOCAL
+    if (getenv("SEED")) seed = atoll(getenv("SEED"));
+#endif
+    int raw_score = compute_score(h, w, board, cost, commands);
+    double elapsed = rdtsc() - clock_begin;
+    cerr << "{\"seed\":" << seed;
+    cerr << ",\"raw_score\":" << raw_score;
+    cerr << ",\"elapsed\":" << elapsed;
+    cerr << "}" << endl;
+    return commands;
+}
+
+
+/******************************************************************************
+ * functions to prepare input format
  ******************************************************************************/
 
 vector<string> flip_board(vector<string> const & f) {
@@ -105,120 +221,12 @@ vector<output_t> with_landscape(vector<string> const & target_board, function<ve
     }
 }
 
-pair<int, int> shoot_ray(vector<string> const & board, int y, int x, int dy, int dx) {
-    int h = board.size();
-    int w = board[0].size();
-    while (true) {
-        y += dy;
-        x += dx;
-        if (y < 0 or h <= y or x < 0 or w <= x) {
-            y = x = -1;
-            break;
-        }
-        if (board[y][x] == C_EMPTY) {
-            // nop
-        } else if (board[y][x] == C_MIRROR1) {
-            dy *= -1;
-            dx *= -1;
-            swap(dy, dx);
-        } else if (board[y][x] == C_MIRROR2) {
-            swap(dy, dx);
-        } else {
-            break;
-        }
-    }
-    return make_pair(y, x);
-}
-
-int compute_score(vector<string> board, int cost_lantern, int cost_mirror, int cost_obstacle, vector<output_t> const & commands) {
-    int h = board.size();
-    int w = board[0].size();
-    int acc = 0;
-    for (output_t command : commands) {
-        int y, x; char c; tie(y, x, c) = command;
-        if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
-            board[y][x] = 'l';
-            acc -= cost_lantern;
-        } else if (c == C_MIRROR1 or c == C_MIRROR2) {
-            board[y][x] = c;
-            acc -= cost_mirror;
-        } else if (c == C_OBSTACLE) {
-            board[y][x] = c;
-            acc -= cost_obstacle;
-        } else {
-            assert (false);
-        }
-    }
-    vector<char> lit(h * w);
-    for (output_t command : commands) {
-        int y, x; char c; tie(y, x, c) = command;
-        if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
-            REP (i, 4) {
-                int ny, nx; tie(ny, nx) = shoot_ray(board, y, x, neighborhood4_y[i], neighborhood4_x[i]);
-                if (ny == -1) continue;
-                if (isdigit(board[ny][nx])) {
-                    lit[ny * w + nx] |= (c - '0');
-                } else if (board[ny][nx] == 'l') {
-                    return - 1000000;  // A lantern should not be illuminated by any light ray.
-                }
-            }
-        }
-    }
-    REP (y, h) REP (x, w) if (isdigit(board[y][x])) {
-        char l = lit[y * w + x];
-        if (l) {
-            acc += (l == board[y][x] - '0' ? 10 + 10 * __builtin_popcount(l) : - 10);
-        }
-    }
-    return acc;
-}
-
-
-/******************************************************************************
- * the main function
- ******************************************************************************/
-
-vector<output_t> solve(vector<string> const & target_board, int cost_lantern, int cost_mirror, int cost_obstacle, int max_mirrors, int max_obstacles) {
-    double clock_begin = rdtsc();
-    random_device device;
-    xor_shift_128 gen(device());
-
-    return with_landscape(target_board, [&](vector<string> const & target_board) {
-        int h = target_board.size();
-        int w = target_board[0].size();
-
-        vector<output_t> commands;
-        int count_mirrors = 0;
-        int count_obstacles = 0;
-        int score = 0;
-        REP (y, h) REP (x, w) if (target_board[y][x] == C_EMPTY) {
-            for (char c : { C_MIRROR1, C_MIRROR2, C_OBSTACLE, C_BLUE, C_YELLOW, C_RED }) {
-                if ((c == C_MIRROR1 or c == C_MIRROR2) and count_mirrors == max_mirrors) continue;
-                if (c == C_OBSTACLE and count_obstacles == max_obstacles) continue;
-                commands.emplace_back(y, x, c);
-                int next_score = compute_score(target_board, cost_lantern, cost_mirror, cost_obstacle, commands);
-                if (score < next_score) {
-                    score = next_score;
-                    if (c == C_MIRROR1 or c == C_MIRROR2) ++ count_mirrors;
-                    if (c == C_OBSTACLE) ++ count_obstacles;
-                    break;
-                }
-                commands.pop_back();
-            }
-        }
-
-        ll seed = -1;
-#ifdef LOCAL
-        if (getenv("SEED")) seed = atoll(getenv("SEED"));
-#endif
-        int raw_score = compute_score(target_board, cost_lantern, cost_mirror, cost_obstacle, commands);
-        double elapsed = rdtsc() - clock_begin;
-        cerr << "{\"seed\":" << seed;
-        cerr << ",\"raw_score\":" << raw_score;
-        cerr << ",\"elapsed\":" << elapsed;
-        cerr << "}" << endl;
-        return commands;
-    });
+string pack_board(vector<string> const & target_board) {
+    int h = target_board.size();
+    int w = target_board[0].size();
+    string packed(h * w, '\0');
+    REP (y, h) REP (x, w) packed[y * w + x] = target_board[y][x];
+    return packed;
 }
 
 
@@ -229,7 +237,15 @@ vector<output_t> solve(vector<string> const & target_board, int cost_lantern, in
 class CrystalLighting {
 public:
     vector<string> placeItems(vector<string> targetBoard, int costLantern, int costMirror, int costObstacle, int maxMirrors, int maxObstacles) {
-        vector<output_t> commands = solve(targetBoard, costLantern, costMirror, costObstacle, maxMirrors, maxObstacles);
+        cost_t cost = { costLantern, costMirror, costObstacle };
+        max_t max_ = { maxMirrors, maxObstacles };
+        vector<output_t> commands =
+            with_landscape(targetBoard, [&](vector<string> const & targetBoard) {
+                int h = targetBoard.size();
+                int w = targetBoard[0].size();
+                string packed = pack_board(targetBoard);
+                return solve(h, w, packed, cost, max_);
+            });
         vector<string> answer;
         for (auto command : commands) {
             int y, x; char c; tie(y, x, c) = command;
