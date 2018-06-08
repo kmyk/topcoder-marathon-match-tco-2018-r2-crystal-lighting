@@ -172,27 +172,85 @@ vector<pair<int, int> > list_crystals(int h, int w, string const & board) {
     return crystals;
 }
 
-pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int dy, int dx) {
+int apply_mirror(char mirror, int dir) {
+    assert (mirror == C_MIRROR1 or mirror == C_MIRROR2);
+    return dir ^ (mirror == C_MIRROR1 ? 1 : 3);
+}
+
+pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int dir, vector<char> & light) {
     while (true) {
-        y += dy;
-        x += dx;
+        y += neighborhood4_y[dir];
+        x += neighborhood4_x[dir];
         if (y < 0 or h <= y or x < 0 or w <= x) {
             y = x = -1;
             break;
         }
-        if (board[y * w + x] == C_EMPTY) {
-            // nop
-        } else if (board[y * w + x] == C_MIRROR1) {
-            dy *= -1;
-            dx *= -1;
-            swap(dy, dx);
-        } else if (board[y * w + x] == C_MIRROR2) {
-            swap(dy, dx);
+        char c = board[y * w + x];
+        if (c == C_EMPTY) {
+            light[y * w + x] ^= 1 << dir;
+        } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+            dir = apply_mirror(c, dir);
         } else {
             break;
         }
     }
     return make_pair(y, x);
+}
+
+vector<pair<int, int> > list_ray_sources(int h, int w, string const & board, int y0, int x0, vector<char> const & light) {
+    vector<pair<int, int> > results;
+    REP (dir, 4) {
+        if (not (light[y0 * w + x0] & (1 << dir))) continue;
+        int y = y0;
+        int x = x0;
+        while (true) {
+            y -= neighborhood4_y[dir];
+            x -= neighborhood4_x[dir];
+            char c = board[y * w + x];
+            if (c == C_EMPTY) {
+                // nop
+            } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+                dir = (apply_mirror(c, (dir + 2) % 4) + 2) % 4;
+            } else {
+                break;
+            }
+        }
+        results.emplace_back(y, x);
+    }
+    return results;
+}
+
+/**
+ * @description 0bXXBBYYRR: (BB, YY, RR) contains numbers of 3 colors, XX is used if (unique) one of them is 4
+ */
+uint8_t pack_light(array<char, 3> const & l) {
+    if (l[0] == 4 or l[1] == 4 or l[2] == 4) {
+        int i = 0;
+        while (l[i] != 4) ++ i;
+        return (i + 1) << 6;
+    } else {
+        return l[0] | (l[1] << 2) | (l[2] << 4);
+    }
+}
+array<char, 3> unpack_light(uint8_t l) {
+    if (l & 0xc0) {
+        array<char, 3> unpacked = {};
+        unpacked[(l >> 6) - 1] = 4;
+        return unpacked;
+    } else {
+        char b = l & 0x3;
+        char y = (l >> 2) & 0x3;
+        char r = (l >> 4) & 0x3;
+        return (array<char, 3>) { b, y, r };
+    }
+}
+char apply_light(char letter, char light, int delta) {
+    array<char, 3> unpacked = unpack_light(light);
+    unpacked[__builtin_ffs(letter - '0') - 1] += delta;
+    return pack_light(unpacked);
+}
+char squash_light(array<char, 3> const & l) {
+    return int(bool(l[0])) | (int(bool(l[1])) << 1) | (int(bool(l[2])) << 2);
 }
 
 struct result_info_t {
@@ -207,7 +265,7 @@ struct result_info_t {
 };
 const result_info_t invalid_result = { - 1000000 };
 
-result_info_t compute_result_info(int h, int w, string board, cost_t cost, max_t max_, vector<output_t> const & commands) {
+result_info_t compute_result_info(int h, int w, string board, cost_t cost, max_t max_, vector<output_t> const & commands, vector<char> & light) {
     result_info_t info = {};
     for (output_t command : commands) {
         int y, x; char c; tie(y, x, c) = command;
@@ -228,15 +286,15 @@ result_info_t compute_result_info(int h, int w, string board, cost_t cost, max_t
     }
     if (info.added_mirrors > max_.mirrors) return invalid_result;  // You can place at most ??? mirrors.
     if (info.added_obstacles > max_.obstacles) return invalid_result;  // You can place at most ??? obstacles.
-    vector<char> lit(h * w);
+    light.assign(h * w, 0);
     for (output_t command : commands) {
         int y, x; char c; tie(y, x, c) = command;
         if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
-            REP (i, 4) {
-                int ny, nx; tie(ny, nx) = shoot_ray(h, w, board, y, x, neighborhood4_y[i], neighborhood4_x[i]);
+            REP (dir, 4) {
+                int ny, nx; tie(ny, nx) = shoot_ray(h, w, board, y, x, dir, light);
                 if (ny == -1) continue;
                 if (isdigit(board[ny * w + nx])) {
-                    lit[ny * w + nx] |= (c - '0');
+                    light[ny * w + nx] = apply_light(c, light[ny * w + nx], +1);
                 } else if (board[ny * w + nx] == C_LANTERN) {
                     return invalid_result;  // A lantern should not be illuminated by any light ray.
                 }
@@ -244,7 +302,7 @@ result_info_t compute_result_info(int h, int w, string board, cost_t cost, max_t
         }
     }
     REP (y, h) REP (x, w) if (isdigit(board[y * w + x])) {
-        int l = lit[y * w + x];
+        int l = squash_light(unpack_light(light[y * w + x]));
         if (l) {
             int b = board[y * w + x] - '0';
             if (l == b) {
@@ -267,7 +325,8 @@ result_info_t compute_result_info(int h, int w, string board, cost_t cost, max_t
 }
 
 int compute_score(int h, int w, string const & board, cost_t cost, max_t max_, vector<output_t> const & commands) {
-    return compute_result_info(h, w, board, cost, max_, commands).score;
+    vector<char> light;
+    return compute_result_info(h, w, board, cost, max_, commands, light).score;
 }
 
 
@@ -299,7 +358,8 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
 
     // state of SA
     vector<output_t> cur;
-    result_info_t info = compute_result_info(h, w, board, cost, max_, cur);
+    vector<char> light;
+    result_info_t info = compute_result_info(h, w, board, cost, max_, cur, light);
 
     // misc values
     int iteration = 0;
@@ -311,7 +371,7 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         return info.score + max(0.0, temperature - 0.1) * info.crystals_secondary_partial * 40;
     };
     auto try_update = [&]() {
-        result_info_t next_info = compute_result_info(h, w, board, cost, max_, cur);
+        result_info_t next_info = compute_result_info(h, w, board, cost, max_, cur, light);
         if (highscore < next_info.score) {
             result = cur;
             highscore = next_info.score;
