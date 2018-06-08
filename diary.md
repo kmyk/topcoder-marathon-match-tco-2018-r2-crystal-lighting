@@ -21,10 +21,7 @@ overall scoreは各ケースにおける順位の総和と見てよいもの。
 -   鏡の設置上限は 0 ~ (水晶の数)/8
 -   障害物の設置上限は 0 ~ (水晶の数)/16
 -   すべて一様分布
-
-細則:
-
--   光源は光を通さない
+-   光源に光が当たるのは禁止
 
 ![example 0](https://www.topcoder.com/contest/problem/CrystalLighting/1.png)
 
