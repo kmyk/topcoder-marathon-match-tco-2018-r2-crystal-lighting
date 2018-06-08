@@ -195,30 +195,39 @@ pair<int, int> shoot_ray(int h, int w, string const & board, int y, int x, int d
     return make_pair(y, x);
 }
 
-int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<output_t> const & commands) {
-    constexpr int MINUS_INF = - 1000000;
-    int count_lanterns = 0;
-    int count_mirrors = 0;
-    int count_obstacles = 0;
+struct result_info_t {
+    int score;
+    int added_lanterns;
+    int added_mirrors;
+    int added_obstacles;
+    int crystals_primary_ok;
+    int crystals_secondary_ok;
+    int crystals_incorrect;
+    int crystals_secondary_partial;  // subset of incorrect
+};
+const result_info_t invalid_result = { - 1000000 };
+
+result_info_t compute_result_info(int h, int w, string board, cost_t cost, max_t max_, vector<output_t> const & commands) {
+    result_info_t info = {};
     for (output_t command : commands) {
         int y, x; char c; tie(y, x, c) = command;
-        if (y < 0 or h <= y or x < 0 or w <= x) return MINUS_INF;  // You can only place items within the board.
-        if (board[y * w + x] != C_EMPTY) return MINUS_INF;  // You can only place items on empty cells of the board. / You can not place two items on the same cell.
+        if (y < 0 or h <= y or x < 0 or w <= x) return invalid_result;  // You can only place items within the board.
+        if (board[y * w + x] != C_EMPTY) return invalid_result;  // You can only place items on empty cells of the board. / You can not place two items on the same cell.
         if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
-            ++ count_lanterns;
+            ++ info.added_lanterns;
             board[y * w + x] = C_LANTERN;
         } else if (c == C_MIRROR1 or c == C_MIRROR2) {
             board[y * w + x] = c;
-            ++ count_mirrors;
+            ++ info.added_mirrors;
         } else if (c == C_OBSTACLE) {
             board[y * w + x] = c;
-            ++ count_obstacles;
+            ++ info.added_obstacles;
         } else {
             assert (false);  // Invalid item type
         }
     }
-    if (count_mirrors > max_.mirrors) return MINUS_INF;  // You can place at most ??? mirrors.
-    if (count_obstacles > max_.obstacles) return MINUS_INF;  // You can place at most ??? obstacles.
+    if (info.added_mirrors > max_.mirrors) return invalid_result;  // You can place at most ??? mirrors.
+    if (info.added_obstacles > max_.obstacles) return invalid_result;  // You can place at most ??? obstacles.
     vector<char> lit(h * w);
     for (output_t command : commands) {
         int y, x; char c; tie(y, x, c) = command;
@@ -229,23 +238,36 @@ int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<ou
                 if (isdigit(board[ny * w + nx])) {
                     lit[ny * w + nx] |= (c - '0');
                 } else if (board[ny * w + nx] == C_LANTERN) {
-                    return MINUS_INF;  // A lantern should not be illuminated by any light ray.
+                    return invalid_result;  // A lantern should not be illuminated by any light ray.
                 }
             }
         }
     }
-    int score = 0;
-    score -= count_lanterns * cost.lantern;
-    score -= count_mirrors * cost.mirror;
-    score -= count_obstacles * cost.obstacle;
     REP (y, h) REP (x, w) if (isdigit(board[y * w + x])) {
-        char l = lit[y * w + x];
+        int l = lit[y * w + x];
         if (l) {
-            char b = board[y * w + x];
-            score += (l == b - '0' ? 10 + 10 * __builtin_popcount(l) : - 10);
+            int b = board[y * w + x] - '0';
+            if (l == b) {
+                ++ (__builtin_popcount(l) == 1 ? info.crystals_primary_ok : info.crystals_secondary_ok);
+            } else {
+                ++ info.crystals_incorrect;
+                if ((b | l) == b) {  // l \subseteq b
+                    ++ info.crystals_secondary_partial;
+                }
+            }
         }
     }
-    return score;
+    info.score -= info.added_lanterns * cost.lantern;
+    info.score -= info.added_mirrors * cost.mirror;
+    info.score -= info.added_obstacles * cost.obstacle;
+    info.score += info.crystals_primary_ok * 20;
+    info.score += info.crystals_secondary_ok * 30;
+    info.score -= info.crystals_incorrect * 10;
+    return info;
+}
+
+int compute_score(int h, int w, string const & board, cost_t cost, max_t max_, vector<output_t> const & commands) {
+    return compute_result_info(h, w, board, cost, max_, commands).score;
 }
 
 
