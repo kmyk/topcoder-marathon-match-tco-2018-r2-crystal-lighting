@@ -488,6 +488,8 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         }
         int prob = uniform_int_distribution<int>(0, 99)(gen);
         static const array<char, 6> item_table = { C_BLUE, C_YELLOW, C_RED, C_MIRROR1, C_MIRROR2, C_OBSTACLE };
+        static const array<char, 3> item_table_light = { C_BLUE, C_YELLOW, C_RED };
+        static const array<char, 3> item_table_not_light = { C_MIRROR1, C_MIRROR2, C_OBSTACLE };
         evaluated = evaluate(info);
 
         if (prob < 50) {  // move one
@@ -503,7 +505,6 @@ auto preserved_info = info;
                 int nx = get<1>(cur[i]) + neighborhood4_x[dir];
                 if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
                 if (board[ny * w + nx] != C_EMPTY) continue;
-                if (light[ny * w + nx]) continue;
             }
             remove(cur[i]);
             get<0>(cur[i]) += neighborhood4_y[dir];
@@ -555,8 +556,10 @@ assert (info.lit_lanterns == preserved_info.lit_lanterns);
         } else {  // add one
             int y = uniform_int_distribution<int>(0, h - 1)(gen);
             int x = uniform_int_distribution<int>(0, w - 1)(gen);
-            if (board[y * w + x] != C_EMPTY or light[y * w + x]) continue;
-            char c = item_table[uniform_int_distribution<int>(0, item_table.size() - 1)(gen)];
+            if (board[y * w + x] != C_EMPTY) continue;
+            char c = light[y * w + x] ? 
+                item_table_not_light[uniform_int_distribution<int>(0, item_table_not_light.size() - 1)(gen)] :
+                item_table_light[    uniform_int_distribution<int>(0,     item_table_light.size() - 1)(gen)];
             cur.emplace_back(y, x, c);
             add(cur.back());
             if (not try_update()) {
