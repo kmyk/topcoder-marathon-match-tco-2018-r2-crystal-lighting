@@ -496,21 +496,21 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
             if (cur.empty()) continue;
             int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
             int dir = uniform_int_distribution<int>(0, 4 - 1)(gen);
-// int amount = uniform_int_distribution<int>(1, 3)(gen);
+            int amount = uniform_int_distribution<int>(1, 2)(gen);
             {
-                int ny = get<0>(cur[i]) + neighborhood4_y[dir];
-                int nx = get<1>(cur[i]) + neighborhood4_x[dir];
+                int ny = get<0>(cur[i]) + amount * neighborhood4_y[dir];
+                int nx = get<1>(cur[i]) + amount * neighborhood4_x[dir];
                 if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
                 if (board[ny * w + nx] != C_EMPTY) continue;
             }
             remove(cur[i]);
-            get<0>(cur[i]) += neighborhood4_y[dir];
-            get<1>(cur[i]) += neighborhood4_x[dir];
+            get<0>(cur[i]) += amount * neighborhood4_y[dir];
+            get<1>(cur[i]) += amount * neighborhood4_x[dir];
             add(cur[i]);
             if (not try_update()) {
                 remove(cur[i]);
-                get<0>(cur[i]) -= neighborhood4_y[dir];
-                get<1>(cur[i]) -= neighborhood4_x[dir];
+                get<0>(cur[i]) -= amount * neighborhood4_y[dir];
+                get<1>(cur[i]) -= amount * neighborhood4_x[dir];
                 add(cur[i]);
             }
 
