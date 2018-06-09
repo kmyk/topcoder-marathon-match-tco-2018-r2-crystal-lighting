@@ -252,7 +252,10 @@ struct result_info_t {
     int crystals_primary_ok;
     int crystals_secondary_ok;
     int crystals_incorrect;
-    int crystals_secondary_partial;  // subset of incorrect
+    int crystals_incorrect_primary_extra_1;
+    int crystals_incorrect_primary_extra_2;
+    int crystals_incorrect_secondary_half;
+    int crystals_incorrect_secondary_extra;
     int lit_lanterns;
     int lit_count;
 };
@@ -268,8 +271,16 @@ void update_score_info_crystal(result_info_t & info, color_t crystal, color_t li
             (__builtin_popcount(light) == 1 ? info.crystals_primary_ok : info.crystals_secondary_ok) += delta;
         } else {
             info.crystals_incorrect += delta;
-            if ((crystal | light) == crystal) {  // light \subseteq crystal
-                info.crystals_secondary_partial += delta;
+            if (crystal == C_DEAD_CRYSTAL - '0') {
+                // nop
+            } else if ((crystal | light) == crystal) {  // light \subseteq crystal
+                info.crystals_incorrect_secondary_half += delta;
+            } else if ((light | crystal) == light) {  // crystal \subseteq light
+                if (__builtin_popcount(crystal) == 1) {
+                    (__builtin_popcount(light ^ crystal) == 1 ? info.crystals_incorrect_primary_extra_1 : info.crystals_incorrect_primary_extra_2) += delta;
+                } else {
+                    info.crystals_incorrect_secondary_extra += delta;
+                }
             }
         }
     }
@@ -478,7 +489,9 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
     };
     auto evaluate = [&](result_info_t const & info) {
         double acc = info.score;
-        acc += max(0.0, temperature - 0.1) * info.crystals_secondary_partial * 40;
+        acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_primary_extra_1 * 5;
+        acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_secondary_half * 40;
+        acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_secondary_extra * 10;
         acc -= max(0.0, temperature - 0.1) * info.lit_count * 0.1;
         return acc;
     };
