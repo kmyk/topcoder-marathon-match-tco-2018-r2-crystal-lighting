@@ -11,3 +11,4 @@ else
 fi \
     > log/$timestamp.$seed.json
 flock log/$timestamp.lock sh -c "cat log/$timestamp.$seed.json >> log/$timestamp.json"
+rm log/$timestamp.$seed.json
