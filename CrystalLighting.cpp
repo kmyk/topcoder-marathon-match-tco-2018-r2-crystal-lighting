@@ -493,9 +493,6 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         evaluated = evaluate(info);
 
         if (prob < 50) {  // move one
-auto preserved_board = board;
-auto preserved_light = light;
-auto preserved_info = info;
             if (cur.empty()) continue;
             int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
             int dir = uniform_int_distribution<int>(0, 4 - 1)(gen);
@@ -515,17 +512,6 @@ auto preserved_info = info;
                 get<0>(cur[i]) -= neighborhood4_y[dir];
                 get<1>(cur[i]) -= neighborhood4_x[dir];
                 add(cur[i]);
-assert (board == preserved_board);
-assert (light == preserved_light);
-assert (info.score == preserved_info.score);
-assert (info.added_lanterns == preserved_info.added_lanterns);
-assert (info.added_obstacles == preserved_info.added_obstacles);
-assert (info.added_mirrors == preserved_info.added_mirrors);
-assert (info.crystals_incorrect == preserved_info.crystals_incorrect);
-assert (info.crystals_primary_ok == preserved_info.crystals_primary_ok);
-assert (info.crystals_secondary_ok == preserved_info.crystals_secondary_ok);
-assert (info.crystals_secondary_partial == preserved_info.crystals_secondary_partial);
-assert (info.lit_lanterns == preserved_info.lit_lanterns);
             }
 
         } else if (prob < 60) {  // modify one
