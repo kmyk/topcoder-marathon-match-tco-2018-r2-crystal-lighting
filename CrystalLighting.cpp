@@ -505,7 +505,8 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         }
         double next_evaluated = evaluate(info);
         int delta = next_evaluated - evaluated;
-        return (delta >= 0 or bernoulli_distribution(exp(delta / temperature))(gen));
+        constexpr double boltzmann = 0.2;
+        return (delta >= 0 or bernoulli_distribution(exp(boltzmann * delta / temperature))(gen));
     };
 
     for (; ; ++ iteration) {
