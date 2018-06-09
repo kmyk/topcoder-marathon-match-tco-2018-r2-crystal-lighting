@@ -398,6 +398,25 @@ public class CrystalLightingVis {
                     return invalidScore;
                 }
             }
+
+            String extraLine = br.readLine();
+            if (extraLine != null) {
+                String[] s = extraLine.split(" ");
+                int declaredScore;
+                try {
+                    if (s.length != 2 || ! s[0].equals("declare")) {
+                        throw new Exception();
+                    }
+                    declaredScore = Integer.parseInt(s[1]);
+                } catch (Exception e) {
+                    addFatalError("Failed to parse an extra line.");
+                    return invalidScore;
+                }
+                if (declaredScore != (int) getScore()) {
+                    addFatalError("Wrong score: excpected " + (int) getScore() + ", but " + declaredScore + " declared.");
+                    return invalidScore;
+                }
+            }
         }
 
         if (manual) {
@@ -432,6 +451,7 @@ public class CrystalLightingVis {
     BufferedReader br;
     static int SZ;
     volatile boolean manualReady;
+    static int returnCode;
     // -----------------------------------------
     String[] placeItems(String[] targetBoard, int costLantern, int costMirror, int costObstacle, int maxMirrors, int maxObstacles) throws IOException {
         StringBuffer sb = new StringBuffer();
@@ -909,11 +929,14 @@ public class CrystalLightingVis {
         if (manual)
             vis = true;
 
+        returnCode = 0;
         CrystalLightingVis f = new CrystalLightingVis(seed);
+        if (! vis) System.exit(returnCode);
     }
     // -----------------------------------------
     void addFatalError(String message) {
         System.out.println(message);
+        returnCode = 1;
     }
 }
 

@@ -19,4 +19,9 @@ int main() {
     for (int i = 0; i < (int)ret.size(); ++i)
         cout << ret[i] << endl;
     cout.flush();
+
+    if (getenv("SCORE")) {
+        cout << "declare " << getenv("SCORE") << endl;
+        cout.flush();
+    }
 }

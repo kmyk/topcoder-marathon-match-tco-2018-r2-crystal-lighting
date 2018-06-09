@@ -569,6 +569,7 @@ assert (info.lit_lanterns == preserved_info.lit_lanterns);
     ll seed = -1;
 #ifdef LOCAL
     if (getenv("SEED")) seed = atoll(getenv("SEED"));
+    setenv("SCORE", to_string(result_info.score).c_str(), true);
 #endif
     int num_empty = count(ALL(board), C_EMPTY);
     int num_obstacles = count(ALL(board), C_OBSTACLE);
