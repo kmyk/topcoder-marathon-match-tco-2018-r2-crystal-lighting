@@ -43,18 +43,18 @@ def main():
         print(s)
 
     elif args.what == 'summary':
-        print('average of raw score =', df['raw_score'].mean())
+        print('average of raw score =', df['rawScore'].mean())
 
     elif args.what == 'compare':
         if args.compare is None:
             parser.error('the following arguments are required: --compare')
         df1 = df
         df2 = load_list_of_json_file(args.compare)
-        df1 = df1.rename(columns={ 'raw_score': 'raw_score_1' })
-        df2 = df2.rename(columns={ 'raw_score': 'raw_score_2' })
-        df = df1.join(df2[ [ 'raw_score_2' ] ])
-        df = df.assign(raw_score_diff=lambda row: row.raw_score_1 - row.raw_score_2)
-        df = df.sort_values(by='raw_score_diff')
+        df1 = df1.rename(columns={ 'rawScore': 'rawScore1' })
+        df2 = df2.rename(columns={ 'rawScore': 'rawScore2' })
+        df = df1.join(df2[ [ 'rawScore2' ] ])
+        df = df.assign(rawScoreDiff=lambda row: row.rawScore1 - row.rawScore2)
+        df = df.sort_values(by='rawScoreDiff')
         headers = list(df.columns)
         for key in list(df.columns):
             if key not in headers:

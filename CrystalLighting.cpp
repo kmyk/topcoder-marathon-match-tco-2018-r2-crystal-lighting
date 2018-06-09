@@ -444,7 +444,7 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
 
     // result of SA
     vector<output_t> result;
-    int highscore = 0;
+    result_info_t result_info = {};
 
     // state of SA
     vector<output_t> cur;
@@ -468,11 +468,11 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         return info.score + max(0.0, temperature - 0.1) * info.crystals_secondary_partial * 40;
     };
     auto try_update = [&]() {
-        if (highscore < info.score) {
+        if (result_info.score < info.score) {
             result = cur;
-            highscore = info.score;
+            result_info = info;
 #ifdef LOCAL
-            cerr << "highscore = " << highscore << "  (at " << iteration << ", " << temperature << ")" << endl;
+            cerr << "highscore = " << result_info.score << "  (at " << iteration << ", " << temperature << ")" << endl;
 #endif
         }
         double next_evaluated = evaluate(info);
@@ -585,7 +585,13 @@ assert (info.lit_lanterns == preserved_info.lit_lanterns);
     cerr << ",\"numEmpty\":" << num_empty;
     cerr << ",\"numObstacles\":" << num_obstacles;
     cerr << ",\"numCrystals\":" << num_crystals;
-    cerr << ",\"raw_score\":" << highscore;
+    cerr << ",\"addedLanterns\":" << result_info.added_lanterns;
+    cerr << ",\"addedMirrors\":" << result_info.added_mirrors;
+    cerr << ",\"addedObstacles\":" << result_info.added_obstacles;
+    cerr << ",\"primaryOk\":" << result_info.crystals_primary_ok;
+    cerr << ",\"secondaryOk\":" << result_info.crystals_secondary_ok;
+    cerr << ",\"incorrect\":" << result_info.crystals_incorrect;
+    cerr << ",\"rawScore\":" << result_info.score;
     cerr << ",\"iteration\":" << iteration;
     cerr << ",\"elapsed\":" << elapsed;
     cerr << "}" << endl;
