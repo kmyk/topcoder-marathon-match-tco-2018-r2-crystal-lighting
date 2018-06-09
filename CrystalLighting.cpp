@@ -53,6 +53,15 @@ const int neighborhood4_x[] = { 1,  0, -1, 0 };
 const int neighborhood8_y[] = { 0, -1, -1, -1, 0, 1, 1, 1 };
 const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 
+template <class RandomEngine>
+int get_random_lt(int n, RandomEngine & gen) {
+    return uniform_int_distribution<int>(0, n - 1)(gen);
+}
+template <class Container, class RandomEngine>
+typename Container::value_type choose_random(Container const & xs, RandomEngine & gen) {
+    return xs[uniform_int_distribution<int>(0, xs.size() - 1)(gen)];
+}
+
 
 /******************************************************************************
  * constants
@@ -500,8 +509,8 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
 
         if (prob < 50) {  // move one
             if (cur.empty()) continue;
-            int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
-            int dir = uniform_int_distribution<int>(0, 4 - 1)(gen);
+            int i = get_random_lt(cur.size(), gen);
+            int dir = get_random_lt(4, gen);
             int amount = uniform_int_distribution<int>(1, 2)(gen);
             {
                 int ny = get<0>(cur[i]) + amount * neighborhood4_y[dir];
@@ -522,8 +531,8 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
 
         } else if (prob < 60) {  // modify one
             if (cur.empty()) continue;
-            int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
-            char c = item_table[uniform_int_distribution<int>(0, item_table.size() - 1)(gen)];
+            int i = get_random_lt(cur.size(), gen);
+            char c = choose_random(item_table, gen);
             remove(cur[i]);
             swap(get<2>(cur[i]), c);
             add(cur[i]);
@@ -535,7 +544,7 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
 
         } else if (prob < 80) {  // remove one
             if (cur.empty()) continue;
-            int i = uniform_int_distribution<int>(0, cur.size() - 1)(gen);
+            int i = get_random_lt(cur.size(), gen);
             swap(cur[i], cur.back());
             auto preserved = cur.back();
             remove(cur.back());
@@ -546,12 +555,12 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
             }
 
         } else {  // add one
-            int y = uniform_int_distribution<int>(0, h - 1)(gen);
-            int x = uniform_int_distribution<int>(0, w - 1)(gen);
+            int y = get_random_lt(h, gen);
+            int x = get_random_lt(w, gen);
             if (board[y * w + x] != C_EMPTY) continue;
             char c = light[y * w + x] ? 
-                item_table_not_light[uniform_int_distribution<int>(0, item_table_not_light.size() - 1)(gen)] :
-                item_table_light[    uniform_int_distribution<int>(0,     item_table_light.size() - 1)(gen)];
+                choose_random(item_table_not_light, gen) :
+                choose_random(item_table_light, gen);
             cur.emplace_back(y, x, c);
             add(cur.back());
             if (not try_update()) {
