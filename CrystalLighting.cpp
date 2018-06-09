@@ -58,21 +58,21 @@ const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
  * constants
  ******************************************************************************/
 
- constexpr int MAX_H = 100;
- constexpr int MAX_W = 100;
+constexpr int MAX_H = 100;
+constexpr int MAX_W = 100;
 
- enum {
-     C_BLUE = '1',
-     C_YELLOW = '2',
-     C_GREEN = '3',
-     C_RED = '4',
-     C_VIOLET = '5',
-     C_ORANGE = '6',
-     C_EMPTY = '.',
-     C_MIRROR1 = '/',
-     C_MIRROR2 = '\\',
-     C_OBSTACLE = 'X',
- };
+enum {
+    C_BLUE = '1',
+    C_YELLOW = '2',
+    C_GREEN = '3',
+    C_RED = '4',
+    C_VIOLET = '5',
+    C_ORANGE = '6',
+    C_EMPTY = '.',
+    C_MIRROR1 = '/',
+    C_MIRROR2 = '\\',
+    C_OBSTACLE = 'X',
+};
 
 typedef tuple<int, int, char> output_t;
 
