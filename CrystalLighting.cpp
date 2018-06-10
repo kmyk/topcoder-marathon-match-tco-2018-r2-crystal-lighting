@@ -493,6 +493,8 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_secondary_half * 40;
         acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_secondary_extra * 10;
         acc -= max(0.0, temperature - 0.1) * info.lit_count * 0.1;
+"add loop for debug";
+acc += cost.mirror * info.added_mirrors;
         return acc;
     };
     auto try_update = [&]() {
@@ -546,6 +548,22 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
         } else if (prob < 60) {  // modify one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
+"add loop for debug";
+if (get<2>(cur[i]) == C_MIRROR1 or get<2>(cur[i]) == C_MIRROR2) {
+    char c = get<2>(cur[i]) ^ C_MIRROR1 ^ C_MIRROR2;
+    int dir = get_random_lt(4, gen);
+    int ny = get<0>(cur[i]) + neighborhood4_y[dir];
+    int nx = get<1>(cur[i]) + neighborhood4_x[dir];
+    if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
+    if (board[ny * w + nx] != C_EMPTY) continue;
+    cur.emplace_back(ny, nx, c);
+    add(cur.back());
+    if (not try_update()) {
+        remove(cur.back());
+        cur.pop_back();
+    }
+    continue;
+}
             char c = choose_random(item_table, gen);
             remove(cur[i]);
             swap(get<2>(cur[i]), c);
