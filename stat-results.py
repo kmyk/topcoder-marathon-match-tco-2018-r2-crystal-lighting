@@ -55,7 +55,7 @@ def main():
         df = df1.join(df2[ [ 'rawScore2' ] ])
         df = df.assign(rawScoreDiff=lambda row: row.rawScore1 - row.rawScore2)
         df = df.sort_values(by='rawScoreDiff')
-        headers = list(df.columns)
+        headers = 'seed H W costLantern costMirror costObstacle maxMirrors maxObstacles rawScore1 rawScore2 rawScoreDiff'.split()
         for key in list(df.columns):
             if key not in headers:
                 df = df.drop(key, axis=1)
