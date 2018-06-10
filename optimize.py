@@ -11,7 +11,7 @@ import tempfile
 import uuid
 
 class Executer(object):
-    def __init__(self, tempdir, sources, seeds):
+    def __init__(self, tempdir, sources, seeds, log_fh):
         self.tempdir = os.path.abspath(tempdir)
         self.sources = []
         for source in sources.split(','):
@@ -19,6 +19,7 @@ class Executer(object):
             shutil.copyfile(source, preserved)
             self.sources += [ preserved ]
         self.seeds = seeds
+        self.log_fh = log_fh
 
     def compile(self, params):
         defines = ' '.join('-D{}=({})'.format(k, v) for k, v in params.items())
@@ -44,19 +45,20 @@ class Executer(object):
                     data = json.loads(line.decode())
                     maximal_score = (20 - data['costLantern'] / 4) * data['numCrystalsPrimary'] + (30 - data['costLantern'] / 2) * data['numCrystalsSecondary']
                     normalized_score = data['rawScore'] / maximal_score
-                    print('\tseed = %s:\traw score = %d,\tnormalized score = %f' % (seed, data['rawScore'], normalized_score), file=sys.stderr)
-                    sys.stderr.flush()
+                    print(json.dumps({ 'seed': seed, 'log': result.stdout.decode(), 'data': data }), file=self.log_fh)
+                    self.log_fh.flush()
                     return normalized_score
             else:
                 assert False
         except Exception as e:
-            print(e, file=sys.stderr)
-            print('seed = {}'.format(seed), file=sys.stderr)
-            print(repr(result.stdout), file=sys.stderr)
-            sys.stderr.flush()
-            return 0.0
+            print(json.dumps({ 'seed': seed, 'log': result.stdout.decode(), 'error': str(e) }), file=self.log_fh)
+            self.log_fh.flush()
+            return None
 
     def evaluate(self, raw_scores):
+        raw_scores = list(filter(lambda x: x is not None, raw_scores))  # ignore failured seeds
+        if not raw_scores:
+            return 0.0
         return sum(raw_scores) / len(raw_scores)
 
     def __call__(self, **kwargs):
@@ -66,7 +68,10 @@ class Executer(object):
             futures = []
             for seed in self.seeds:
                 futures.append(executor.submit(self.execute, binary, seed))
-            return self.evaluate([ f.result() for f in futures ])
+            value = self.evaluate([ f.result() for f in futures ])
+            print(json.dumps({ 'params': kwargs, 'value': value }), file=self.log_fh)
+            self.log_fh.flush()
+            return value
 
 def plot(optimizer, name, path):
     import matplotlib.pyplot as plt
@@ -87,6 +92,7 @@ def main():
     parser.add_argument('--n-iter', type=int, default=90)
     parser.add_argument('--init-points', type=int, default=10)
     parser.add_argument('--acq', choices=[ 'ucb', 'ei', 'poi' ], default='ucb')
+    parser.add_argument('--log-file', default='/dev/null')
     parser.add_argument('--plot')
     args = parser.parse_args()
 
@@ -104,10 +110,12 @@ def main():
         'n_iter': args.n_iter,
         'acq': args.acq,
     }
-    with tempfile.TemporaryDirectory() as tempdir:
-        execute = Executer(tempdir=tempdir, sources=args.sources, seeds=args.seeds)
-        optimizer = BayesianOptimization(f=execute, pbounds=param_bounds, verbose=True)
-        optimizer.maximize(**kwargs)
+    with open(args.log_file, 'w') as log_fh:
+        with tempfile.TemporaryDirectory() as tempdir:
+            execute = Executer(tempdir=tempdir, sources=args.sources, seeds=args.seeds, log_fh=log_fh)
+            optimizer = BayesianOptimization(f=execute, pbounds=param_bounds, verbose=True)
+            optimizer.maximize(**kwargs)
+        print(json.dumps(optimizer.res), file=log_fh)
 
     # output
     print(json.dumps(optimizer.res, indent=4))
