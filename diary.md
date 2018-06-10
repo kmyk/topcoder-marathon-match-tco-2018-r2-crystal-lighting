@@ -2797,3 +2797,9 @@ localになにかdaemonを置いてreverse tunnelなどすれば可能だが、�
 自動化したせいでむしろ時間を取られてる気がする。 出力を眺めるのが楽しいのが悪い
 
 まあ次元数が上がってくると手で調整する気力が無になるので実際のところ必要
+
+### 2018年  6月 11日 月曜日 04:26:57 JST
+
+`6dbb15cbce4eab3e15461622c848132246f91283`
+
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.6dbb15cbce4eab3e15461622c848132246f91283.png?token=ACGd-PepabIcYYGmd05wtL4jliVay5V_ks5bJrZDwA%3D%3D)
