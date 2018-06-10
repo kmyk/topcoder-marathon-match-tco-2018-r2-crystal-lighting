@@ -1,7 +1,7 @@
 #!/bin/bash
 timestamp=$1
 seed=$2
-if java -jar tester.jar -exec ./log/$timestamp.bin -debug -novis -seed $seed > log/$timestamp.$seed.log ; then
+if java -jar tester.jar -exec ./log/$timestamp.bin -debug -novis -timeout 20 -seed $seed > log/$timestamp.$seed.log ; then
     cat log/$timestamp.$seed.log \
         | tee /dev/stderr \
         | grep '{"seed":'

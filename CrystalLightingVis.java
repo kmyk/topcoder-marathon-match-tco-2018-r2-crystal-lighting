@@ -449,7 +449,7 @@ public class CrystalLightingVis {
     InputStream is;
     OutputStream os;
     BufferedReader br;
-    static int SZ;
+    static int SZ, timeout;
     volatile boolean manualReady;
     // -----------------------------------------
     String[] placeItems(String[] targetBoard, int costLantern, int costMirror, int costObstacle, int maxMirrors, int maxObstacles) throws IOException {
@@ -873,7 +873,19 @@ public class CrystalLightingVis {
             JScrollPane sp = new JScrollPane(v);
             jf.getContentPane().add(sp);
         }
+        Thread timer = new Thread() {
+            public void run() {
+                try {
+                    Thread.sleep(timeout * 1000);
+                    addFatalError("timeout: " + timeout + " sec elapsed");
+                    proc.destroy();
+                } catch (InterruptedException e) {
+                    // nop
+                }
+            }
+        };
         if (exec != null) {
+            if (timeout > 0) timer.start();
             try {
                 Runtime rt = Runtime.getRuntime();
                 String[] envp = { "SEED=" + seed };
@@ -888,6 +900,7 @@ public class CrystalLightingVis {
             }
         }
         System.out.println("Score = " + runTest(seed));
+        if (timeout > 0) timer.interrupt();
         if (proc != null)
             try { proc.destroy(); } 
             catch (Exception e) {
@@ -910,6 +923,7 @@ public class CrystalLightingVis {
         mark = false;
         showRays = false;
         save = false;
+        timeout = 0;
         for (int i = 0; i<args.length; i++)
         {   if (args[i].equals("-seed"))
                 seed = args[++i];
@@ -931,6 +945,8 @@ public class CrystalLightingVis {
                 showRays = true;
             if (args[i].equals("-save"))
                 save = true;
+            if (args[i].equals("-timeout"))
+                timeout = Integer.parseInt(args[++i]);
         }
         if (exec == null)
             manual = true;
