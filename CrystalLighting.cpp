@@ -707,6 +707,34 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
+        } else if (prob < 65) {  // swap colors of related lanterns
+            int y, x; tie(y, x) = choose_random(initial_secondary_crystals, gen);
+            if (summarize_light(light[y * w + x]) != board[y * w + x] - '0') continue;
+            vector<int> sources;
+            REP (dir, 4) {
+                if (get_color_for_dir(light[y * w + x], dir)) {
+                    int ny, nx; tie(ny, nx, ignore) = chase_ray_source(h, w, board, y, x, dir, light);
+                    int i = cur_reverse[ny * w + nx];
+                    assert (i != -1);
+                    sources.push_back(i);
+                }
+            }
+            if (sources.size() >= 3) shuffle(ALL(sources), gen);
+            int i = sources[0];
+            int j = 1; while (get<2>(cur[i]) == get<2>(cur[sources[j]])) ++ j; j = sources[j];
+            remove(cur[i]);
+            remove(cur[j]);
+            swap(get<2>(cur[i]), get<2>(cur[j]));
+            add(cur[i]);
+            add(cur[j]);
+            if (not try_update()) {
+                remove(cur[i]);
+                remove(cur[j]);
+                swap(get<2>(cur[i]), get<2>(cur[j]));
+                add(cur[i]);
+                add(cur[j]);
+            }
+
         } else if (prob < 80) {  // remove one
             if (cur.empty()) continue;
             {
