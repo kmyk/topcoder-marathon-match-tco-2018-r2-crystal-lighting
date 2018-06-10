@@ -39,5 +39,5 @@ score: a.out tester.jar
 	-mkdir log
 	cp a.out log/${timestamp}.bin
 	parallel -- bash score.sh ${timestamp} {} ::: $$(seq ${size})
-	python3 stat-results.py table log/${timestamp}.json
-	python3 stat-results.py summary log/${timestamp}.json
+	python3 stats.py table log/${timestamp}.json
+	python3 stats.py summary log/${timestamp}.json
