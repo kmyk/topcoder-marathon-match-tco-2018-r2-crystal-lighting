@@ -182,24 +182,16 @@ string fill_unused_area(int h, int w, string board) {
     return board;
 }
 
-vector<pair<int, int> > list_crystals(int h, int w, string const & board) {
-    vector<pair<int, int> > crystals;
+vector<pair<int, int> > list_cells_with_letters(int h, int w, string const & board, string const & letters) {
+    vector<pair<int, int> > acc;
+    acc.reserve(h * w);
     REP (y, h) REP (x, w) {
-        if (isdigit(board[y * w + x])) {
-            crystals.emplace_back(y, x);
+        if (count(ALL(letters), board[y * w + x])) {
+            acc.emplace_back(y, x);
         }
     }
-    return crystals;
-}
-
-vector<pair<int, int> > list_empties(int h, int w, string const & board) {
-    vector<pair<int, int> > empties;
-    REP (y, h) REP (x, w) {
-        if (board[y * w + x] == C_EMPTY) {
-            empties.emplace_back(y, x);
-        }
-    }
-    return empties;
+    acc.shrink_to_fit();
+    return acc;
 }
 
 int apply_mirror(char mirror, int dir) {
@@ -207,31 +199,22 @@ int apply_mirror(char mirror, int dir) {
     return dir ^ (mirror == C_MIRROR1 ? 1 : 3);
 }
 
-vector<pair<int, int> > list_ray_sources(int h, int w, string const & board, int y0, int x0, vector<uint8_t> const & light) {
-    vector<pair<int, int> > results;
-    REP (dir0, 4) {
-        if (not (light[y0 * w + x0] & (0x3 << (2 * dir0)))) continue;
-        int dir = dir0;
-        int y = y0;
-        int x = x0;
-        while (true) {
-            y -= neighborhood4_y[dir];
-            x -= neighborhood4_x[dir];
-            letter_t c = board[y * w + x];
-            if (c == C_EMPTY) {
-                // nop
-            } else if (c == C_MIRROR1 or c == C_MIRROR2) {
-                dir = (apply_mirror(c, (dir + 2) % 4) + 2) % 4;
-            } else {
-                assert (c == C_LANTERN);
-                break;
-            }
+tuple<int, int, int> chase_ray_source(int h, int w, string const & board, int y, int x, int dir, vector<uint8_t> const & light) {
+    assert (light[y * w + x] & (0x3 << (2 * dir)));
+    while (true) {
+        y -= neighborhood4_y[dir];
+        x -= neighborhood4_x[dir];
+        letter_t c = board[y * w + x];
+        if (c == C_EMPTY) {
+            // nop
+        } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+            dir = (apply_mirror(c, (dir + 2) % 4) + 2) % 4;
+        } else {
+            assert (c == C_LANTERN);
+            break;
         }
-        if (y == y0 and x == x0) continue;
-        if (find(ALL(results), make_pair(y, x)) != results.end()) continue;
-        results.emplace_back(y, x);
     }
-    return results;
+    return make_tuple(y, x, dir);
 }
 
 vector<output_t> get_commands_from_points(int h, int w, string const & board, vector<uint8_t> const & light, vector<pair<int, int> > const & points) {
@@ -615,8 +598,9 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     original_board = fill_unused_area(h, w, original_board);
 
     // prepare lists
-    vector<pair<int, int> > initial_crystals = list_crystals(h, w, original_board);
-    vector<pair<int, int> > initial_empties = list_empties(h, w, original_board);
+    vector<pair<int, int> > initial_crystals = list_cells_with_letters(h, w, original_board, "123456");
+    vector<pair<int, int> > initial_secondary_crystals = list_cells_with_letters(h, w, original_board, "356");
+    vector<pair<int, int> > initial_empties = list_cells_with_letters(h, w, original_board, ".");
 
     // result of SA
     vector<output_t> result;
