@@ -300,19 +300,21 @@ void update_score_info_score(result_info_t & info, cost_t cost, max_t max_) {
     info.score -= info.crystals_incorrect * 10;
 }
 
-tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, int y, int x, int dir, color_t color, result_info_t & info, vector<uint8_t> & light) {
-    static int used[MAX_H * MAX_W];
-    static int clock;
-    ++ clock;
+tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, int y0, int x0, int dir0, color_t color, result_info_t & info, vector<uint8_t> & light) {
 #ifdef LOCAL
     assert (color == I_BLUE or color == I_YELLOW or color == I_RED);
 #endif
+    static int used[MAX_H * MAX_W];
+    static int clock;
+    used[y0 * w + x0] = ++ clock;
+    int y = y0;
+    int x = x0;
+    int dir = dir0;
     while (true) {
         y += neighborhood4_y[dir];
         x += neighborhood4_x[dir];
         if (y < 0 or h <= y or x < 0 or w <= x) {
-            y = x = dir = -1;
-            break;
+            return make_tuple(-1, -1, -1);
         }
         if (used[y * w + x] != clock) {  // ignore if loop exists
             info.lit_count -= bool(light[y * w + x] & (0x3 << (2 * dir)));
@@ -327,6 +329,9 @@ tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, 
             dir = apply_mirror(c, dir);
         } else {
             break;
+        }
+        if (y == y0 and x == x0 and dir == dir0) {
+            return make_tuple(-1, -1, -1);
         }
     }
     return make_tuple(y, x, dir);
