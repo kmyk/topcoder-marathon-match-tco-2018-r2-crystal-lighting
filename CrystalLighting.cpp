@@ -760,9 +760,13 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     if (getenv("SEED")) seed = atoll(getenv("SEED"));
     setenv("SCORE", to_string(result_info.score).c_str(), true);
 #endif
-    int num_empty = count(ALL(board), C_EMPTY);
-    int num_obstacles = count(ALL(board), C_OBSTACLE);
-    int num_crystals = h * w - num_obstacles - num_empty;
+    original_board = original_original_board;
+    int num_empty = count(ALL(original_board), C_EMPTY);
+    int num_obstacles = count(ALL(original_board), C_OBSTACLE);
+    int num_crystals_primary   = count(ALL(original_board), C_BLUE)  + count(ALL(original_board), C_YELLOW) + count(ALL(original_board), C_RED);
+    int num_crystals_secondary = count(ALL(original_board), C_GREEN) + count(ALL(original_board), C_VIOLET) + count(ALL(original_board), C_ORANGE);
+    int num_crystals = num_crystals_primary + num_crystals_secondary;
+    assert (num_empty + num_obstacles + num_crystals == h * w);
     double elapsed = rdtsc() - clock_begin;
     cerr << "{\"seed\":" << seed;
     cerr << ",\"H\":" << h;
@@ -775,6 +779,8 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     cerr << ",\"numEmpty\":" << num_empty;
     cerr << ",\"numObstacles\":" << num_obstacles;
     cerr << ",\"numCrystals\":" << num_crystals;
+    cerr << ",\"numCrystalsPrimary\":" << num_crystals_primary;
+    cerr << ",\"numCrystalsSecondary\":" << num_crystals_secondary;
     cerr << ",\"addedLanterns\":" << result_info.added_lanterns;
     cerr << ",\"addedMirrors\":" << result_info.added_mirrors;
     cerr << ",\"addedObstacles\":" << result_info.added_obstacles;

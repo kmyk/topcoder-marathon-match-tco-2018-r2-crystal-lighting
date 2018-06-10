@@ -28,6 +28,8 @@ def main():
     args = parser.parse_args()
 
     df = load_list_of_json_file(args.file)
+    df = df.assign(maximalScore=lambda row: (20 - row.costLantern / 4) * row.numCrystalsPrimary + (30 - row.costLantern / 2) * row.numCrystalsSecondary)
+    df = df.assign(normalizedScore=lambda row: row.rawScore / row.maximalScore)
 
     if args.what == 'table':
         headers = [ df.index.name ] + list(df.columns)
@@ -43,7 +45,11 @@ def main():
         print(s)
 
     elif args.what == 'summary':
-        print('average of raw score =', df['rawScore'].mean())
+        print('average of        raw score =', df['rawScore'].mean())
+        print('average of normalized score =', df['normalizedScore'].mean())
+        print('max     of normalized score =', df['normalizedScore'].max())
+        print('median  of normalized score =', df['normalizedScore'].median())
+        print('min     of normalized score =', df['normalizedScore'].min())
 
     elif args.what == 'compare':
         if args.compare is None:

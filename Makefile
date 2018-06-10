@@ -40,3 +40,4 @@ score: a.out tester.jar
 	cp a.out log/${timestamp}.bin
 	parallel -- bash score.sh ${timestamp} {} ::: $$(seq ${size})
 	python3 stat-results.py table log/${timestamp}.json
+	python3 stat-results.py summary log/${timestamp}.json
