@@ -15,6 +15,8 @@ def load_list_of_json_file(path):
             df += [ decoder.decode(line) ]
     df = pd.DataFrame(df, columns=df[0].keys())
     df.set_index('seed', inplace=True)
+    df = df.assign(maximalScore=lambda row: (20 - row.costLantern / 4) * row.numCrystalsPrimary + (30 - row.costLantern / 2) * row.numCrystalsSecondary)
+    df = df.assign(normalizedScore=lambda row: row.rawScore / row.maximalScore)
     return df
 
 def main():
@@ -28,14 +30,10 @@ def main():
     args = parser.parse_args()
 
     df = load_list_of_json_file(args.file)
-    df = df.assign(maximalScore=lambda row: (20 - row.costLantern / 4) * row.numCrystalsPrimary + (30 - row.costLantern / 2) * row.numCrystalsSecondary)
-    df = df.assign(normalizedScore=lambda row: row.rawScore / row.maximalScore)
 
     if args.what == 'table':
         headers = 'seed H W costLantern costMirror costObstacle maxMirrors maxObstacles addedLanterns addedMirrors addedObstacles primaryOk secondaryOk incorrect iteration elapsed rawScore maximalScore normalizedScore'.split()
-        for key in list(df.columns):
-            if key not in headers:
-                df = df.drop(key, axis=1)
+        df = df[ headers[1 :] ]
         df = df.sort_index()
         s = tabulate(df, headers=headers, showindex='always', tablefmt='orgtbl')
         lines = s.splitlines()
@@ -55,15 +53,14 @@ def main():
             parser.error('the following arguments are required: --compare')
         df1 = df
         df2 = load_list_of_json_file(args.compare)
-        df1 = df1.rename(columns={ 'rawScore': 'rawScore1' })
-        df2 = df2.rename(columns={ 'rawScore': 'rawScore2' })
-        df = df1.join(df2[ [ 'rawScore2' ] ])
+        df1 = df1.rename(columns={ 'rawScore': 'rawScore1', 'normalizedScore': 'normalizedScore1' })
+        df2 = df2.rename(columns={ 'rawScore': 'rawScore2', 'normalizedScore': 'normalizedScore2' })
+        df = df1.join(df2[ [ 'rawScore2', 'normalizedScore2' ] ])
         df = df.assign(rawScoreDiff=lambda row: row.rawScore1 - row.rawScore2)
-        df = df.sort_values(by='rawScoreDiff')
-        headers = 'seed H W costLantern costMirror costObstacle maxMirrors maxObstacles rawScore1 rawScore2 rawScoreDiff'.split()
-        for key in list(df.columns):
-            if key not in headers:
-                df = df.drop(key, axis=1)
+        df = df.assign(normalizedScoreDiff=lambda row: row.rawScoreDiff / row.maximalScore)
+        df = df.sort_values(by='normalizedScoreDiff')
+        headers = 'seed H W costLantern costMirror costObstacle maxMirrors maxObstacles rawScore1 rawScore2 rawScoreDiff normalizedScore1 normalizedScore2 normalizedScoreDiff'.split()
+        df = df[ headers[1 :] ]
         s = tabulate(df, headers=headers, showindex='always', tablefmt='orgtbl')
         lines = s.splitlines()
         lines[1] = lines[1].replace('+', '|')
