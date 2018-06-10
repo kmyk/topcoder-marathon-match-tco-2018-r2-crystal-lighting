@@ -317,13 +317,10 @@ void update_score_info_score(result_info_t & info, cost_t cost, max_t max_) {
     info.score -= info.crystals_incorrect * 10;
 }
 
-tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, int y0, int x0, int dir0, color_t color, result_info_t & info, vector<uint8_t> & light) {
+tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, int y0, int x0, int dir0, color_t color, result_info_t & info, vector<uint8_t> & light, bool is_positive) {
 #ifdef LOCAL
     assert (color == I_BLUE or color == I_YELLOW or color == I_RED);
 #endif
-    static int used[MAX_H * MAX_W];
-    static int clock;
-    used[y0 * w + x0] = ++ clock;
     int y = y0;
     int x = x0;
     int dir = dir0;
@@ -333,12 +330,9 @@ tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, 
         if (y < 0 or h <= y or x < 0 or w <= x) {
             return make_tuple(-1, -1, -1);
         }
-        if (used[y * w + x] != clock) {  // ignore if loop exists
-            info.lit_count -= bool(light[y * w + x] & (0x3 << (2 * dir)));
-            light[y * w + x] ^= __builtin_ffs(color) << (2 * dir);
-            info.lit_count += bool(light[y * w + x] & (0x3 << (2 * dir)));
-        }
-        used[y * w + x] = clock;
+        info.lit_count -= bool(light[y * w + x] & (0x3 << (2 * dir)));
+        light[y * w + x] ^= __builtin_ffs(color) << (2 * dir);
+        info.lit_count += bool(light[y * w + x] & (0x3 << (2 * dir)));
         letter_t c = board[y * w + x];
         if (c == C_EMPTY) {
             // nop
@@ -347,9 +341,7 @@ tuple<int, int, int> update_score_shoot_ray(int h, int w, string const & board, 
         } else {
             break;
         }
-        if (y == y0 and x == x0 and dir == dir0) {
-            return make_tuple(-1, -1, -1);
-        }
+        if (not is_positive and y == y0 and x == x0) break;
     }
     return make_tuple(y, x, dir);
 }
@@ -390,27 +382,29 @@ void update_score_info_add_command(int h, int w, string & board, cost_t cost, ma
     assert (0 <= y and y < h and 0 <= x and x < w);
     assert (board[y * w + x] == C_EMPTY);
 #endif
-    auto shoot = [&](int dir, color_t color) {
-        int ny, nx, ndir; tie(ny, nx, ndir) = update_score_shoot_ray(h, w, board, y, x, dir, color, info, light);
+    auto shoot = [&](int dir, color_t color, bool is_positive) {
+        int ny, nx, ndir; tie(ny, nx, ndir) = update_score_shoot_ray(h, w, board, y, x, dir, color, info, light, is_positive);
         update_score_hit_ray(h, w, board, ny, nx, ndir, color, info, light);
     };
+    uint8_t preserved_l = light[y * w + x];
     REP (dir, 4) {
-        color_t color = get_color_for_dir(light[y * w + x], dir);
-        if (color) shoot(dir, color);
+        color_t color = get_color_for_dir(preserved_l, dir);
+        if (color) shoot(dir, color, false);
     }
     if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
         board[y * w + x] = C_LANTERN;  // NOTE: must be here because they may light themselves
         ++ info.added_lanterns;
         info.lit_lanterns += count_rays(light[y * w + x]);
         REP (dir, 4) {
-            shoot(dir, c - '0');
+            shoot(dir, c - '0', true);
         }
     } else if (c == C_MIRROR1 or c == C_MIRROR2) {
 	board[y * w + x] = c;
 	++ info.added_mirrors;
+        uint8_t preserved_l = light[y * w + x];
         REP (dir, 4) {
-            color_t color = get_color_for_dir(light[y * w + x], dir);
-            if (color) shoot(apply_mirror(c, dir), color);
+            color_t color = get_color_for_dir(preserved_l, dir);
+            if (color) shoot(apply_mirror(c, dir), color, true);
         }
     } else if (c == C_OBSTACLE) {
 	board[y * w + x] = c;
@@ -427,21 +421,22 @@ void update_score_info_remove_command(int h, int w, string & board, cost_t cost,
     assert (0 <= y and y < h and 0 <= x and x < w);
     assert (board[y * w + x] == (isdigit(c) ? C_LANTERN : c));
 #endif
-    auto shoot = [&](int dir, color_t color) {
-        int ny, nx, ndir; tie(ny, nx, ndir) = update_score_shoot_ray(h, w, board, y, x, dir, color, info, light);
+    auto shoot = [&](int dir, color_t color, bool is_positive) {
+        int ny, nx, ndir; tie(ny, nx, ndir) = update_score_shoot_ray(h, w, board, y, x, dir, color, info, light, is_positive);
         update_score_hit_ray(h, w, board, ny, nx, ndir, color, info, light);
     };
     if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
         REP (dir, 4) {
-            shoot(dir, c - '0');
+            shoot(dir, c - '0', false);
         }
         info.lit_lanterns -= count_rays(light[y * w + x]);
         board[y * w + x] = C_EMPTY;
         -- info.added_lanterns;
     } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+        uint8_t preserved_l = light[y * w + x];
         REP (dir, 4) {
-            color_t color = get_color_for_dir(light[y * w + x], dir);
-            if (color) shoot(apply_mirror(c, dir), color);
+            color_t color = get_color_for_dir(preserved_l, dir);
+            if (color) shoot(apply_mirror(c, dir), color, false);
         }
         board[y * w + x] = C_EMPTY;
 	-- info.added_mirrors;
@@ -451,9 +446,10 @@ void update_score_info_remove_command(int h, int w, string & board, cost_t cost,
     } else {
         assert (false);
     }
+    uint8_t preserved_l = light[y * w + x];
     REP (dir, 4) {
-        color_t color = get_color_for_dir(light[y * w + x], dir);
-        if (color) shoot(dir, color);
+        color_t color = get_color_for_dir(preserved_l, dir);
+        if (color) shoot(dir, color, true);
     }
     update_score_info_score(info, cost, max_);
 }
