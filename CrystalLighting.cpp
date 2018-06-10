@@ -261,6 +261,23 @@ struct result_info_t {
 };
 const result_info_t invalid_result = { - 1000000 };
 
+bool operator == (result_info_t const & a, result_info_t const & b) {
+    return a.score == b.score
+        and a.added_lanterns == b.added_lanterns
+        and a.added_mirrors == b.added_mirrors
+        and a.added_obstacles == b.added_obstacles
+        and a.crystals_primary_ok == b.crystals_primary_ok
+        and a.crystals_secondary_ok == b.crystals_secondary_ok
+        and a.crystals_incorrect == b.crystals_incorrect
+        and a.crystals_incorrect_primary_extra_1 == b.crystals_incorrect_primary_extra_1
+        and a.crystals_incorrect_primary_extra_2 == b.crystals_incorrect_primary_extra_2
+        and a.crystals_incorrect_secondary_half == b.crystals_incorrect_secondary_half
+        and a.crystals_incorrect_secondary_extra == b.crystals_incorrect_secondary_extra
+        and a.lit_lanterns == b.lit_lanterns
+        and a.lit_count == b.lit_count
+        ;
+}
+
 void update_score_info_crystal(result_info_t & info, color_t crystal, color_t light, int delta) {
 #ifdef LOCAL
     assert (0 <= crystal and crystal <= 8);
@@ -441,46 +458,166 @@ void update_score_info_remove_command(int h, int w, string & board, cost_t cost,
     update_score_info_score(info, cost, max_);
 }
 
-int compute_score(int h, int w, string board, cost_t cost, max_t max_, vector<output_t> const & commands) {
-    vector<uint8_t> light(h * w);
+
+/******************************************************************************
+ * functions for debug
+ ******************************************************************************/
+
+bool validate_result_info(int h, int w, string const & original_board, cost_t cost, max_t max_, vector<output_t> const & commands, string const & result_board, vector<uint8_t> const & result_light, result_info_t const & result_info) {
+    string board = original_board;
     result_info_t info = {};
-    for (auto cmd : commands) {
-        update_score_info_add_command(h, w, board, cost, max_, info, light, cmd);
+
+    // deploy items to the board
+    for (auto command : commands) {
+        int y, x; char c; tie(y, x, c) = command;
+        if (c == C_BLUE or c == C_YELLOW or c == C_RED) {
+            board[y * w + x] = C_LANTERN;
+            ++ info.added_lanterns;
+        } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+            board[y * w + x] = c;
+            ++ info.added_mirrors;
+        } else if (c == C_OBSTACLE) {
+            board[y * w + x] = c;
+            ++ info.added_obstacles;
+        } else {
+            assert (false);
+        }
     }
-    return info.score;
+
+    // chase rays from lanterns
+    vector<uint8_t> light(h * w);
+    for (auto command : commands) {
+        int y0, x0; char c0; tie(y0, x0, c0) = command;
+        if (not isdigit(c0)) continue;
+        REP (dir0, 4) {
+            int y = y0;
+            int x = x0;
+            int dir = dir0;
+            while (true) {
+                y += neighborhood4_y[dir];
+                x += neighborhood4_x[dir];
+                if (y < 0 or h <= y or x < 0 or w <= x) break;
+                light[y * w + x] |= (uint8_t)__builtin_ffs(c0 - '0') << (2 * dir);
+                char c = board[y * w + x];
+                if (c == C_EMPTY) {
+                    // nop
+                } else if (c == C_MIRROR1 or c == C_MIRROR2) {
+                    dir = apply_mirror(c, dir);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    // count lit crystals
+    REP (y, h) REP (x, w) {
+        uint8_t l = light[y * w + x];
+        if (not l) continue;
+        info.lit_count += count_rays(l);
+        letter_t c = board[y * w + x];
+        if (isdigit(c)) {
+            color_t c1 = c - '0';
+            color_t l1 = summarize_light(l);
+            if (__builtin_popcount(c1) == 1) {
+                if (c1 == l1) {
+                    ++ info.crystals_primary_ok;
+                } else if ((c1 | l1) == l1) {
+                    if (__builtin_popcount(c1 ^ l1) == 1) {
+                        ++ info.crystals_incorrect_primary_extra_1;
+                    } else {
+                        ++ info.crystals_incorrect_primary_extra_2;
+                    }
+                }
+            } else {
+                if (c1 == l1) {
+                    ++ info.crystals_secondary_ok;
+                } else if ((l1 | c1) == c1) {
+                    ++ info.crystals_incorrect_secondary_half;
+                } else if ((c1 | l1) == l1) {
+                    ++ info.crystals_incorrect_secondary_extra;
+                }
+            }
+            if (c1 != l1) {
+                ++ info.crystals_incorrect;
+            }
+        } else if (c == C_LANTERN) {
+            info.lit_lanterns += count_rays(l);
+        }
+    }
+    update_score_info_score(info, cost, max_);
+
+    // print info and return result
+    if (board == result_board and light == result_light and info == result_info) {
+        return true;
+    } else {
+        cerr << "VALIDATION FAILED" << endl;
+        cerr << "board: " << (board == result_board ? "OK" : "NG") << endl;
+        cerr << "light: " << (light == result_light ? "OK" : "NG") << endl;
+        cerr << "info:  " << (info  == result_info  ? "OK" : "NG") << endl;
+        REP (y, h) {
+            REP (x, w) cerr << board[y * w + x];
+            cerr << '|';
+            REP (x, w) cerr << result_board[y * w + x];
+            cerr << endl;
+        }
+        REP (x, 2 * w + 1) cerr << '-';
+        cerr << endl;
+        REP (y, h) {
+            REP (x, w) cerr << char(light[y * w + x] ? summarize_light(light[y * w + x]) + '0' : '.');
+            cerr << '|';
+            REP (x, w) cerr << char(result_light[y * w + x] ? summarize_light(result_light[y * w + x]) + '0' : '.');
+            cerr << endl;
+        }
+        cerr << "details:" << endl;
+        REP (y, h) {
+            REP (x, w) {
+                if (light[y * w + x]) {
+                    fprintf(stderr, "%2x", light[y * w + x]);
+                } else {
+                    cerr << " .";
+                }
+            }
+            cerr << " | ";
+            REP (x, w) {
+                if (result_light[y * w + x]) {
+                    fprintf(stderr, "%2x", result_light[y * w + x]);
+                } else {
+                    cerr << " .";
+                }
+            }
+            cerr << endl;
+        }
+        cerr << endl;
+        return false;
+    }
 }
+
 
 /******************************************************************************
  * the main function
  ******************************************************************************/
 
-vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
+vector<output_t> solve(int h, int w, string const & original_original_board, cost_t cost, max_t max_) {
     double clock_begin = rdtsc();
     random_device device;
     xor_shift_128 gen(device());
 
     // remove unnecessary items
-    board = remove_impossible_crystals(h, w, board);
-    board = fill_unused_area(h, w, board);
-#ifdef LOCAL
-    REP (y, h) {
-        REP (x, w) {
-            cerr << board[y * w + x];
-        }
-        cerr<< endl;
-    }
-#endif
-    vector<pair<int, int> > crystals = list_crystals(h, w, board);
+    string original_board = original_original_board;
+    original_board = remove_impossible_crystals(h, w, original_board);
+    original_board = fill_unused_area(h, w, original_board);
 
     // result of SA
     vector<output_t> result;
     result_info_t result_info = {};
 #ifdef LOCAL
-    string result_board = board;
+    string result_board = original_board;
 #endif
 
     // state of SA
     vector<output_t> cur;
+    string board = original_board;
     vector<uint8_t> light(h * w);
     result_info_t info = {};
     double evaluated;
@@ -508,6 +645,11 @@ acc += cost.mirror * info.added_mirrors;
         return acc;
     };
     auto try_update = [&]() {
+#ifdef LOCAL
+#ifdef DEBUG
+        assert (validate_result_info(h, w, original_board, cost, max_, cur, board, light, info));
+#endif
+#endif
         if (result_info.score < info.score) {
             result = cur;
             result_info = info;
