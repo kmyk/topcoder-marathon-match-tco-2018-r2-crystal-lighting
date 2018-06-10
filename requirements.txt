@@ -1,0 +1,6 @@
+bayesian-optimization
+matplotlib
+numpy
+pandas
+seaborn
+tabulate

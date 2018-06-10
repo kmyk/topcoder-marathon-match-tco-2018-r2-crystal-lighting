@@ -41,3 +41,9 @@ score: a.out tester.jar
 	parallel -- bash score.sh ${timestamp} {} ::: $$(seq ${size})
 	python3 stats.py table log/${timestamp}.json
 	python3 stats.py summary log/${timestamp}.json
+
+requirements:  # for new cloud environments
+	apt update
+	apt upgrade -y
+	apt install -y build-essential g++ default-jre default-jdk python3 python3-pip
+	LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pip3 install --requirement requirements.txt
