@@ -630,10 +630,10 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     };
     auto evaluate = [&](result_info_t const & info) {
         double acc = info.score;
-        acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_primary_extra_1 * 5;
-        acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_secondary_half * 40;
-        acc += max(0.0, temperature - 0.1) * info.crystals_incorrect_secondary_extra * 10;
-        acc -= max(0.0, temperature - 0.1) * info.lit_count * 0.1;
+        acc += max(0.0, temperature - 0.1) * exp(EV1) * info.crystals_incorrect_primary_extra_1 * 5;
+        acc += max(0.0, temperature - 0.1) * exp(EV2) * info.crystals_incorrect_secondary_half * 40;
+        acc += max(0.0, temperature - 0.1) * exp(EV3) * info.crystals_incorrect_secondary_extra * 10;
+        acc -= max(0.0, temperature - 0.1) * exp(EV4) * info.lit_count * 0.1;
         return acc;
     };
     auto try_update = [&]() {
@@ -653,8 +653,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         }
         double next_evaluated = evaluate(info);
         int delta = next_evaluated - evaluated;
-        constexpr double boltzmann = 0.2;
-        return (delta >= 0 or bernoulli_distribution(exp(boltzmann * delta / temperature))(gen));
+        return (delta >= 0 or bernoulli_distribution(exp(BOLTZMANN * delta / temperature))(gen));
     };
 
     for (; ; ++ iteration) {
