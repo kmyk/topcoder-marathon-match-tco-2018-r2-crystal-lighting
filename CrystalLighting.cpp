@@ -664,6 +664,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
 #ifdef LOCAL
             result_board = board;
             cerr << "highscore = " << result_info.score << "  (at " << iteration << ", " << temperature << ")" << endl;
+            assert (validate_result_info(h, w, original_board, cost, max_, cur, board, light, info));
 #endif
         }
         double next_evaluated = evaluate(info);
