@@ -13,6 +13,27 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
 
 
 /******************************************************************************
+ * parameters
+ ******************************************************************************/
+
+#ifndef BOLTZMANN
+#define BOLTZMANN (0.2)
+#endif
+#ifndef EVAL_PARAM_1
+#define EVAL_PARAM_1 (5)
+#endif
+#ifndef EVAL_PARAM_2
+#define EVAL_PARAM_2 (40)
+#endif
+#ifndef EVAL_PARAM_3
+#define EVAL_PARAM_3 (10)
+#endif
+#ifndef EVAL_PARAM_4
+#define EVAL_PARAM_4 (0.1)
+#endif
+
+
+/******************************************************************************
  * general libraries
  ******************************************************************************/
 
@@ -630,10 +651,10 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     };
     auto evaluate = [&](result_info_t const & info) {
         double acc = info.score;
-        acc += max(0.0, temperature - 0.1) * exp(EV1) * info.crystals_incorrect_primary_extra_1 * 5;
-        acc += max(0.0, temperature - 0.1) * exp(EV2) * info.crystals_incorrect_secondary_half * 40;
-        acc += max(0.0, temperature - 0.1) * exp(EV3) * info.crystals_incorrect_secondary_extra * 10;
-        acc -= max(0.0, temperature - 0.1) * exp(EV4) * info.lit_count * 0.1;
+        acc += max(0.0, temperature - 0.1) * EVAL_PARAM_1 * info.crystals_incorrect_primary_extra_1;
+        acc += max(0.0, temperature - 0.1) * EVAL_PARAM_2 * info.crystals_incorrect_secondary_half;
+        acc += max(0.0, temperature - 0.1) * EVAL_PARAM_3 * info.crystals_incorrect_secondary_extra;
+        acc -= max(0.0, temperature - 0.1) * EVAL_PARAM_4 * info.lit_count;
         return acc;
     };
     auto try_update = [&]() {

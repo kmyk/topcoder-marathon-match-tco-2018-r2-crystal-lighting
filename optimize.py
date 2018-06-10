@@ -100,10 +100,10 @@ def main():
     from bayes_opt import BayesianOptimization  # https://pypi.org/project/bayesian-optimization/
     param_bounds = {
         'BOLTZMANN': (0.0, 2.0),
-        'EV1': (-1.0, 2.0),
-        'EV2': (-1.0, 2.0),
-        'EV3': (-1.0, 2.0),
-        'EV4': (-1.0, 2.0),
+        'EVAL_PARAM_1': (0, 10),
+        'EVAL_PARAM_2': (20, 60),
+        'EVAL_PARAM_3': (0, 20),
+        'EVAL_PARAM_4': (0, 3),
     }
     kwargs = {
         'init_points': args.init_points,
