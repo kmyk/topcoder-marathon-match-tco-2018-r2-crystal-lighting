@@ -654,6 +654,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     vector<uint8_t> light(h * w);
     result_info_t info = {};
     double evaluated;
+    vector<int> cur_reverse(h * w, -1);
 
     // misc values
     int iteration = 0;
@@ -712,20 +713,22 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
             int i = get_random_lt(cur.size(), gen);
             int dir = get_random_lt(4, gen);
             int amount = uniform_int_distribution<int>(1, 2)(gen);
-            {
-                int ny = get<0>(cur[i]) + amount * neighborhood4_y[dir];
-                int nx = get<1>(cur[i]) + amount * neighborhood4_x[dir];
-                if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
-                if (board[ny * w + nx] != C_EMPTY) continue;
-            }
+            int y, x; tie(y, x, ignore) = cur[i];
+            int ny = x + amount * neighborhood4_y[dir];
+            int nx = y + amount * neighborhood4_x[dir];
+            if (ny < 0 or h <= ny or nx < 0 or w <= nx) continue;
+            if (board[ny * w + nx] != C_EMPTY) continue;
             remove(cur[i]);
-            get<0>(cur[i]) += amount * neighborhood4_y[dir];
-            get<1>(cur[i]) += amount * neighborhood4_x[dir];
+            get<0>(cur[i]) = ny;
+            get<1>(cur[i]) = nx;
             add(cur[i]);
-            if (not try_update()) {
+            if (try_update()) {
+                cur_reverse[ y * w +  x] = -1;
+                cur_reverse[ny * w + nx] = i;
+            } else {
                 remove(cur[i]);
-                get<0>(cur[i]) -= amount * neighborhood4_y[dir];
-                get<1>(cur[i]) -= amount * neighborhood4_x[dir];
+                get<0>(cur[i]) = y;
+                get<1>(cur[i]) = x;
                 add(cur[i]);
             }
 
@@ -744,12 +747,20 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
 
         } else if (prob < 80) {  // remove one
             if (cur.empty()) continue;
-            int i = get_random_lt(cur.size(), gen);
-            swap(cur[i], cur.back());
+            {
+                int i = get_random_lt(cur.size(), gen);
+                int y1, x1; tie(y1, x1, ignore) = cur[i];
+                int y2, x2; tie(y2, x2, ignore) = cur.back();
+                swap(cur[i], cur.back());
+                swap(cur_reverse[y1 * w + x1], cur_reverse[y2 * w + x2]);
+            }
             auto preserved = cur.back();
             remove(cur.back());
             cur.pop_back();
-            if (not try_update()) {
+            if (try_update()) {
+                int y, x; tie(y, x, ignore) = preserved;
+                cur_reverse[y * w + x] = -1;
+            } else {
                 cur.push_back(preserved);
                 add(cur.back());
             }
@@ -762,7 +773,9 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 choose_random(item_table_light, gen);
             cur.emplace_back(y, x, c);
             add(cur.back());
-            if (not try_update()) {
+            if (try_update()) {
+                cur_reverse[y * w + x] = cur.size() - 1;
+            } else {
                 remove(cur.back());
                 cur.pop_back();
             }
