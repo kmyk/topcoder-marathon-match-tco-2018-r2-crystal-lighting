@@ -473,6 +473,9 @@ vector<output_t> solve(int h, int w, string board, cost_t cost, max_t max_) {
     // result of SA
     vector<output_t> result;
     result_info_t result_info = {};
+#ifdef LOCAL
+    string result_board = board;
+#endif
 
     // state of SA
     vector<output_t> cur;
@@ -507,6 +510,7 @@ acc += cost.mirror * info.added_mirrors;
             result = cur;
             result_info = info;
 #ifdef LOCAL
+            result_board = board;
             cerr << "highscore = " << result_info.score << "  (at " << iteration << ", " << temperature << ")" << endl;
 #endif
         }
@@ -607,6 +611,14 @@ if (get<2>(cur[i]) == C_MIRROR1 or get<2>(cur[i]) == C_MIRROR2) {
         }
     }
 
+#ifdef LOCAL
+    REP (y, h) {
+        REP (x, w) {
+            cerr << result_board[y * w + x];
+        }
+        cerr<< endl;
+    }
+#endif
     ll seed = -1;
 #ifdef LOCAL
     if (getenv("SEED")) seed = atoll(getenv("SEED"));
