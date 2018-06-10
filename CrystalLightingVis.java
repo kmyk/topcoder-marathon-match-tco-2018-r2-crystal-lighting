@@ -451,7 +451,6 @@ public class CrystalLightingVis {
     BufferedReader br;
     static int SZ;
     volatile boolean manualReady;
-    static int returnCode;
     // -----------------------------------------
     String[] placeItems(String[] targetBoard, int costLantern, int costMirror, int costObstacle, int maxMirrors, int maxObstacles) throws IOException {
         StringBuffer sb = new StringBuffer();
@@ -883,14 +882,23 @@ public class CrystalLightingVis {
                 is = proc.getInputStream();
                 br = new BufferedReader(new InputStreamReader(is));
                 new ErrorReader(proc.getErrorStream()).start();
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                addFatalError("failed to spwan the process: " + exec);
+                e.printStackTrace();
+            }
         }
         System.out.println("Score = " + runTest(seed));
         if (proc != null)
             try { proc.destroy(); } 
-            catch (Exception e) { e.printStackTrace(); }
+            catch (Exception e) {
+                addFatalError("failed to stop the process: " + exec);
+                e.printStackTrace();
+            }
       }
-      catch (Exception e) { e.printStackTrace(); }
+      catch (Exception e) {
+          addFatalError("something wrong in CrystalLightingVis()");
+          e.printStackTrace();
+      }
     }
     // -----------------------------------------
     public static void main(String[] args) {
@@ -929,14 +937,12 @@ public class CrystalLightingVis {
         if (manual)
             vis = true;
 
-        returnCode = 0;
         CrystalLightingVis f = new CrystalLightingVis(seed);
-        if (! vis) System.exit(returnCode);
     }
     // -----------------------------------------
     void addFatalError(String message) {
-        System.out.println(message);
-        returnCode = 1;
+        System.out.println("[FATAL] " + message);
+        if (! vis) System.exit(1);
     }
 }
 

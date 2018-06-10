@@ -7,7 +7,8 @@ if java -jar tester.jar -exec ./log/$timestamp.bin -debug -novis -seed $seed > l
         | grep '{"seed":'
 else
     cat log/$timestamp.$seed.log > /dev/stderr
-    echo "{\"seed\":$seed}"
+    error=$(grep '[FATAL]' log/$timestamp.$seed.log)
+    echo "{\"seed\":$seed,\"error\":\"$error\"}"
 fi \
     > log/$timestamp.$seed.json
 flock log/$timestamp.lock sh -c "cat log/$timestamp.$seed.json >> log/$timestamp.json"
