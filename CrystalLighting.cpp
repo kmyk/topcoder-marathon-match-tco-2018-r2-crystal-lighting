@@ -1,4 +1,22 @@
-#include <bits/stdc++.h>
+#pragma GCC optimize "O3"
+#pragma GCC target "sse4.2"
+#include <algorithm>
+#include <array>
+#include <bitset>
+#include <cassert>
+#include <cstdio>
+#include <functional>
+#include <iostream>
+#include <limits>
+#include <map>
+#include <queue>
+#include <random>
+#include <set>
+#include <sstream>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 #define REP(i, n) for (int i = 0; (i) < int(n); ++ (i))
 #define REP3(i, m, n) for (int i = (m); (i) < int(n); ++ (i))
 #define REP_R(i, n) for (int i = int(n) - 1; (i) >= 0; -- (i))
