@@ -192,6 +192,16 @@ vector<pair<int, int> > list_crystals(int h, int w, string const & board) {
     return crystals;
 }
 
+vector<pair<int, int> > list_empties(int h, int w, string const & board) {
+    vector<pair<int, int> > empties;
+    REP (y, h) REP (x, w) {
+        if (board[y * w + x] == C_EMPTY) {
+            empties.emplace_back(y, x);
+        }
+    }
+    return empties;
+}
+
 int apply_mirror(char mirror, int dir) {
     assert (mirror == C_MIRROR1 or mirror == C_MIRROR2);
     return dir ^ (mirror == C_MIRROR1 ? 1 : 3);
@@ -604,6 +614,10 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     original_board = remove_impossible_crystals(h, w, original_board);
     original_board = fill_unused_area(h, w, original_board);
 
+    // prepare lists
+    vector<pair<int, int> > initial_crystals = list_crystals(h, w, original_board);
+    vector<pair<int, int> > initial_empties = list_empties(h, w, original_board);
+
     // result of SA
     vector<output_t> result;
     result_info_t result_info = {};
@@ -718,8 +732,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
             }
 
         } else {  // add one
-            int y = get_random_lt(h, gen);
-            int x = get_random_lt(w, gen);
+            int y, x; tie(y, x) = choose_random(initial_empties, gen);
             if (board[y * w + x] != C_EMPTY) continue;
             char c = light[y * w + x] ? 
                 choose_random(item_table_not_light, gen) :
