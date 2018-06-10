@@ -32,11 +32,10 @@ def main():
     df = df.assign(normalizedScore=lambda row: row.rawScore / row.maximalScore)
 
     if args.what == 'table':
-        headers = [ df.index.name ] + list(df.columns)
-        for key in list(headers):
-            if key.endswith('samples'):
+        headers = 'seed H W costLantern costMirror costObstacle maxMirrors maxObstacles addedLanterns addedMirrors addedObstacles primaryOk secondaryOk incorrect iteration elapsed rawScore maximalScore normalizedScore'.split()
+        for key in list(df.columns):
+            if key not in headers:
                 df = df.drop(key, axis=1)
-                headers.remove(key)
         df = df.sort_index()
         s = tabulate(df, headers=headers, showindex='always', tablefmt='orgtbl')
         lines = s.splitlines()
