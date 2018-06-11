@@ -715,7 +715,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         static const array<char, 3> item_table_not_light = { C_MIRROR1, C_MIRROR2, C_OBSTACLE };
         evaluated = evaluate(info);
 
-        if (prob < 50) {  // move one
+        if (prob < 10) {  // move one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
             int dir = get_random_lt(4, gen);
@@ -739,7 +739,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 60) {  // modify one
+        } else if (prob < 20) {  // modify one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
             char c = choose_random(item_table, gen);
@@ -752,7 +752,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 70) {  // remove one
+        } else if (prob < 30) {  // remove one
             if (cur.empty()) continue;
             swap_to_back(get_random_lt(cur.size(), gen));
             auto preserved = cur.back();
