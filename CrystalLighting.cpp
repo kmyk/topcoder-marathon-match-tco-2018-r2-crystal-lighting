@@ -35,19 +35,19 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
  ******************************************************************************/
 
 #ifndef BOLTZMANN
-#define BOLTZMANN (0.2)
+#define BOLTZMANN (0.1736)
 #endif
 #ifndef EVAL_PARAM_1
-#define EVAL_PARAM_1 (5)
+#define EVAL_PARAM_1 (2)
 #endif
 #ifndef EVAL_PARAM_2
-#define EVAL_PARAM_2 (40)
+#define EVAL_PARAM_2 (15)
 #endif
 #ifndef EVAL_PARAM_3
-#define EVAL_PARAM_3 (10)
+#define EVAL_PARAM_3 (4)
 #endif
 #ifndef EVAL_PARAM_4
-#define EVAL_PARAM_4 (0.1)
+#define EVAL_PARAM_4 (0.03)
 #endif
 
 
