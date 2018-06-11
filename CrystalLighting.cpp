@@ -777,7 +777,9 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 cur_reverse[y * w + x] = -1;
             }
             assert (board[y * w + x] == C_EMPTY);
-            char c = choose_random(item_table, gen);
+            char c = light[y * w + x] ?
+                choose_random(item_table, gen) :
+                choose_random(item_table_light, gen);
             if (isdigit(c)) {
                 REP (dir, 4) {
                     if (get_color_for_dir(light[y * w + x], dir)) {
