@@ -662,6 +662,13 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     double sa_clock_begin = rdtsc();
     double sa_clock_end = clock_begin + TLE * 0.95;
 
+    auto swap_to_back = [&](int i) {
+        if (i == (int)cur.size() - 1) return;
+        int y1, x1; tie(y1, x1, ignore) = cur[i];
+        int y2, x2; tie(y2, x2, ignore) = cur.back();
+        swap(cur[i], cur.back());
+        swap(cur_reverse[y1 * w + x1], cur_reverse[y2 * w + x2]);
+    };
     auto add = [&](output_t command) {
         update_score_info_add_command(h, w, board, cost, max_, info, light, command);
     };
@@ -745,15 +752,9 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 80) {  // remove one
+        } else if (prob < 70) {  // remove one
             if (cur.empty()) continue;
-            {
-                int i = get_random_lt(cur.size(), gen);
-                int y1, x1; tie(y1, x1, ignore) = cur[i];
-                int y2, x2; tie(y2, x2, ignore) = cur.back();
-                swap(cur[i], cur.back());
-                swap(cur_reverse[y1 * w + x1], cur_reverse[y2 * w + x2]);
-            }
+            swap_to_back(get_random_lt(cur.size(), gen));
             auto preserved = cur.back();
             remove(cur.back());
             cur.pop_back();
@@ -767,10 +768,29 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
 
         } else {  // add one
             int y, x; tie(y, x) = choose_random(initial_empties, gen);
-            if (board[y * w + x] != C_EMPTY) continue;
-            char c = light[y * w + x] ? 
-                choose_random(item_table_not_light, gen) :
-                choose_random(item_table_light, gen);
+            vector<output_t> preserved;
+            if (board[y * w + x] != C_EMPTY) {
+                swap_to_back(cur_reverse[y * w + x]);
+                preserved.push_back(cur.back());
+                remove(cur.back());
+                cur.pop_back();
+                cur_reverse[y * w + x] = -1;
+            }
+            assert (board[y * w + x] == C_EMPTY);
+            char c = choose_random(item_table, gen);
+            if (isdigit(c)) {
+                REP (dir, 4) {
+                    if (get_color_for_dir(light[y * w + x], dir)) {
+                        int ny, nx; tie(ny, nx, ignore) = chase_ray_source(h, w, board, y, x, dir, light);
+                        swap_to_back(cur_reverse[ny * w + nx]);
+                        preserved.push_back(cur.back());
+                        remove(cur.back());
+                        cur.pop_back();
+                        cur_reverse[ny * w + nx] = -1;
+                    }
+                }
+                assert (not light[y * w + x]);
+            }
             cur.emplace_back(y, x, c);
             add(cur.back());
             if (try_update()) {
@@ -778,6 +798,12 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
             } else {
                 remove(cur.back());
                 cur.pop_back();
+                for (auto command : preserved) {
+                    int ny, nx; tie(ny, nx, ignore) = command;
+                    add(command);
+                    cur.push_back(command);
+                    cur_reverse[ny * w + nx] = cur.size() - 1;
+                }
             }
         }
     }
