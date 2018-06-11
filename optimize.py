@@ -113,7 +113,7 @@ def main():
     parser.add_argument('--sources', default='main.cpp,CrystalLighting.cpp')
     parser.add_argument('--n-iter', type=int, default=90)
     parser.add_argument('--init-points', type=int, default=10)
-    parser.add_argument('--acq', choices=[ 'ucb', 'ei', 'poi' ], default='ucb')
+    # parser.add_argument('--acq', choices=[ 'ucb', 'ei', 'poi' ], default='ucb')
     parser.add_argument('--log-file', default='/dev/null')
     parser.add_argument('--plot')
     args = parser.parse_args()
@@ -121,16 +121,19 @@ def main():
     # optimize
     from bayes_opt import BayesianOptimization  # https://pypi.org/project/bayesian-optimization/
     param_bounds = {
-        'BOLTZMANN': (0.0, 2.0),
-        'EVAL_PARAM_1': (0, 10),
-        'EVAL_PARAM_2': (20, 60),
-        'EVAL_PARAM_3': (0, 20),
-        'EVAL_PARAM_4': (0, 3),
+        'BOLTZMANN_1': (0.0, 2.0),
+        'BOLTZMANN_2': (0.0, 1.0),
+        'NBHD_PROB_1': (0, 100),
+        'NBHD_PROB_2': (0, 30),
+        'NBHD_PROB_3': (0, 30),
+        'NBHD_PROB_4': (0, 100),
     }
     kwargs = {
         'init_points': args.init_points,
         'n_iter': args.n_iter,
-        'acq': args.acq,
+        # 'acq': args.acq,
+        'acq': 'ucb',
+        'kappa': 1.0,
     }
     with open(args.log_file, 'w') as log_fh:
         with tempfile.TemporaryDirectory() as tempdir:
