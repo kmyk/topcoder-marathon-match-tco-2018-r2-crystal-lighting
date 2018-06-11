@@ -3,6 +3,7 @@ import concurrent.futures
 import datetime
 import glob
 import json
+import math
 import multiprocessing
 import os
 import shutil
@@ -21,6 +22,7 @@ class Executer(object):
             self.sources += [ preserved ]
         self.seeds = seeds
         self.log_fh = log_fh
+        self.max_value = - math.inf
 
     def compile(self, params):
         defines = ' '.join('-D{}=({})'.format(k, v) for k, v in params.items())
@@ -77,14 +79,21 @@ class Executer(object):
     def __call__(self, **kwargs):
         sys.stdout.flush()  # required
         binary = self.compile(kwargs)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+        cpu_count = multiprocessing.cpu_count()
+        probe = min(len(self.seeds), math.ceil((len(self.seeds) // 10 + 1) / cpu_count) * cpu_count)  # use a multiple of cpu_count
+        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_count) as executor:
             futures = []
-            for seed in self.seeds:
+            for seed in self.seeds[: probe]:
                 futures.append(executor.submit(self.execute, binary, seed))
             value = self.evaluate([ f.result() for f in futures ])
-            print(json.dumps({ 'params': kwargs, 'value': value }), file=self.log_fh)
-            self.log_fh.flush()
-            return value
+            if value > self.max_value / 2:  # check whether the params should be examined exactly
+                for seed in self.seeds[probe :]:
+                    futures.append(executor.submit(self.execute, binary, seed))
+                value = self.evaluate([ f.result() for f in futures ])
+        print(json.dumps({ 'params': kwargs, 'value': value }), file=self.log_fh)
+        self.log_fh.flush()
+        self.max_value = max(self.max_value, value)
+        return value
 
 def plot(optimizer, name, path):
     import matplotlib.pyplot as plt

@@ -813,6 +813,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     cerr << ",\"iteration\":" << iteration;
     cerr << ",\"elapsed\":" << elapsed;
     cerr << "}" << endl;
+    cerr.flush();
     return result;
 }
 
