@@ -742,7 +742,10 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         } else if (prob < 20) {  // modify one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
-            char c = choose_random(item_table, gen);
+            int y, x; tie(y, x, ignore) = cur[i];
+            char c = light[y * w + x] ?
+                choose_random(item_table_not_light, gen) :
+                choose_random(item_table_light, gen);
             remove(cur[i]);
             swap(get<2>(cur[i]), c);
             add(cur[i]);
