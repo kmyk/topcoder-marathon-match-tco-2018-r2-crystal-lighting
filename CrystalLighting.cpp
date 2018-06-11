@@ -715,7 +715,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         static const array<char, 3> item_table_not_light = { C_MIRROR1, C_MIRROR2, C_OBSTACLE };
         evaluated = evaluate(info);
 
-        if (prob < 50) {  // move one
+        if (prob < 40) {  // move one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
             int dir = get_random_lt(4, gen);
@@ -739,7 +739,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 60) {  // modify one
+        } else if (prob < 50) {  // modify one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
             char c = choose_random(item_table, gen);
@@ -752,7 +752,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 70) {  // remove one
+        } else if (prob < 60) {  // remove one
             if (cur.empty()) continue;
             swap_to_back(get_random_lt(cur.size(), gen));
             auto preserved = cur.back();
@@ -764,6 +764,34 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
             } else {
                 cur.push_back(preserved);
                 add(cur.back());
+            }
+
+        } else if (prob < 70) {  // adjust a crystal
+            int y, x; tie(y, x) = choose_random(initial_crystals, gen);
+            color_t b = board[y * w + x] - '0';
+            color_t l = summarize_light(light[y * w + x]);
+            if (l == b) continue;
+            vector<output_t> preserved;
+            REP (dir, 4) {
+                color_t c = get_color_for_dir(light[y * w + x], dir);
+                if (not c) continue;
+                if (((l | b) == b) and (c & l)) continue;  // remove only unnecessary colors when l \subseteq b
+                int ny, nx; tie(ny, nx, ignore) = chase_ray_source(h, w, board, y, x, dir, light);
+                swap_to_back(cur_reverse[ny * w + nx]);
+                preserved.push_back(cur.back());
+                remove(cur.back());
+                cur.pop_back();
+                cur_reverse[ny * w + nx] = -1;
+            }
+            if (try_update()) {
+                // nop
+            } else {
+                for (auto command : preserved) {
+                    int ny, nx; tie(ny, nx, ignore) = command;
+                    add(command);
+                    cur.push_back(command);
+                    cur_reverse[ny * w + nx] = cur.size() - 1;
+                }
             }
 
         } else {  // add one
