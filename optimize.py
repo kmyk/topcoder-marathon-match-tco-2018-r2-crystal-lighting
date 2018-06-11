@@ -1,5 +1,6 @@
 # Python Version: 3.x
 import concurrent.futures
+import datetime
 import glob
 import json
 import multiprocessing
@@ -42,16 +43,28 @@ class Executer(object):
             result.check_returncode()
             for line in result.stdout.splitlines():
                 if line.startswith(b'{"seed":'):
-                    data = json.loads(line.decode())
-                    maximal_score = (20 - data['costLantern'] / 4) * data['numCrystalsPrimary'] + (30 - data['costLantern'] / 2) * data['numCrystalsSecondary']
-                    normalized_score = data['rawScore'] / maximal_score
-                    print(json.dumps({ 'seed': seed, 'log': result.stdout.decode(), 'data': data }), file=self.log_fh)
+                    row = json.loads(line.decode())
+                    maximal_score = (20 - row['costLantern'] / 4) * row['numCrystalsPrimary'] + (30 - row['costLantern'] / 2) * row['numCrystalsSecondary']
+                    normalized_score = row['rawScore'] / maximal_score
+                    data = {
+                        'seed': seed,
+                        'timestamp': str(datetime.datetime.now(datetime.timezone.utc)),
+                        'log': result.stdout.decode(),
+                        'data': row,
+                    }
+                    print(json.dumps(data), file=self.log_fh)
                     self.log_fh.flush()
                     return normalized_score
             else:
                 assert False
         except Exception as e:
-            print(json.dumps({ 'seed': seed, 'log': result.stdout.decode(), 'error': str(e) }), file=self.log_fh)
+            data = {
+                'seed': seed,
+                'timestamp': str(datetime.datetime.now(datetime.timezone.utc)),
+                'log': result.stdout.decode(),
+                'error': str(e),
+            }
+            print(json.dumps(data), file=self.log_fh)
             self.log_fh.flush()
             return None
 
