@@ -698,7 +698,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         acc -= max(0.0, temperature - 0.1) * EVAL_PARAM_4 * info.lit_count;
         return acc;
     };
-    const double boltzmann = (BOLTZMANN_1 / 100.0) * (1 + (BOLTZMANN_2 / 100.0) * h * w * 0.0001);
+    const double boltzmann = BOLTZMANN_1 * (1 + BOLTZMANN_2 * h * w * 0.0001);
     auto try_update = [&]() {
 #ifdef LOCAL
 #ifdef DEBUG
@@ -847,6 +847,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     int num_crystals = num_crystals_primary + num_crystals_secondary;
     assert (num_empty + num_obstacles + num_crystals == h * w);
     double elapsed = rdtsc() - clock_begin;
+    cerr.flush();
     cerr << "{\"seed\":" << seed;
     cerr << ",\"H\":" << h;
     cerr << ",\"W\":" << w;

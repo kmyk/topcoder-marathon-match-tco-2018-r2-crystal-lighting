@@ -43,5 +43,5 @@ score: a.out tester.jar
 	python3 stats.py summary log/${timestamp}.json
 
 requirements:  # for new cloud environments
-	apt install -y build-essential g++ default-jre default-jdk python3 python3-pip
+	apt install -y build-essential parallel g++ default-jre default-jdk python3 python3-pip python3-tk
 	LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pip3 install --requirement requirements.txt
