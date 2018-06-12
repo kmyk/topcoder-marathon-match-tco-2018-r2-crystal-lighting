@@ -34,8 +34,11 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
  * parameters
  ******************************************************************************/
 
-#ifndef BOLTZMANN
-#define BOLTZMANN (0.1736)
+#ifndef BOLTZMANN_1
+#define BOLTZMANN_1 (0.20)
+#endif
+#ifndef BOLTZMANN_2
+#define BOLTZMANN_2 (-0.5)
 #endif
 #ifndef EVAL_PARAM_1
 #define EVAL_PARAM_1 (2)
@@ -48,6 +51,18 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
 #endif
 #ifndef EVAL_PARAM_4
 #define EVAL_PARAM_4 (0.03)
+#endif
+#ifndef NBHD_PROB_1
+#define NBHD_PROB_1 (10)
+#endif
+#ifndef NBHD_PROB_2
+#define NBHD_PROB_2 (10)
+#endif
+#ifndef NBHD_PROB_3
+#define NBHD_PROB_3 (10)
+#endif
+#ifndef NBHD_PROB_4
+#define NBHD_PROB_4 (70)
 #endif
 
 
@@ -683,6 +698,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         acc -= max(0.0, temperature - 0.1) * EVAL_PARAM_4 * info.lit_count;
         return acc;
     };
+    const double boltzmann = BOLTZMANN_1 * (1 + BOLTZMANN_2 * h * w * 0.0001);
     auto try_update = [&]() {
 #ifdef LOCAL
 #ifdef DEBUG
@@ -700,7 +716,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
         }
         double next_evaluated = evaluate(info);
         int delta = next_evaluated - evaluated;
-        return (delta >= 0 or bernoulli_distribution(exp(BOLTZMANN * delta / temperature))(gen));
+        return (delta >= 0 or bernoulli_distribution(exp(boltzmann * delta / temperature))(gen));
     };
 
     for (; ; ++ iteration) {
@@ -709,13 +725,13 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
             if (t > sa_clock_end) break;
             temperature = 1 - (t - sa_clock_begin) / (sa_clock_end - sa_clock_begin);
         }
-        int prob = uniform_int_distribution<int>(0, 99)(gen);
+        int prob = get_random_lt(NBHD_PROB_1 + NBHD_PROB_2 + NBHD_PROB_3 + NBHD_PROB_4, gen);
         static const array<char, 6> item_table = { C_BLUE, C_YELLOW, C_RED, C_MIRROR1, C_MIRROR2, C_OBSTACLE };
         static const array<char, 3> item_table_light = { C_BLUE, C_YELLOW, C_RED };
         static const array<char, 3> item_table_not_light = { C_MIRROR1, C_MIRROR2, C_OBSTACLE };
         evaluated = evaluate(info);
 
-        if (prob < 50) {  // move one
+        if (prob < NBHD_PROB_1) {  // move one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
             int dir = get_random_lt(4, gen);
@@ -739,7 +755,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 60) {  // modify one
+        } else if (prob < NBHD_PROB_1 + NBHD_PROB_2) {  // modify one
             if (cur.empty()) continue;
             int i = get_random_lt(cur.size(), gen);
             char c = choose_random(item_table, gen);
@@ -752,7 +768,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
                 add(cur[i]);
             }
 
-        } else if (prob < 70) {  // remove one
+        } else if (prob < NBHD_PROB_1 + NBHD_PROB_2 + NBHD_PROB_3) {  // remove one
             if (cur.empty()) continue;
             swap_to_back(get_random_lt(cur.size(), gen));
             auto preserved = cur.back();
@@ -831,6 +847,7 @@ vector<output_t> solve(int h, int w, string const & original_original_board, cos
     int num_crystals = num_crystals_primary + num_crystals_secondary;
     assert (num_empty + num_obstacles + num_crystals == h * w);
     double elapsed = rdtsc() - clock_begin;
+    cerr.flush();
     cerr << "{\"seed\":" << seed;
     cerr << ",\"H\":" << h;
     cerr << ",\"W\":" << w;
