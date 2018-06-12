@@ -35,10 +35,10 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
  ******************************************************************************/
 
 #ifndef BOLTZMANN_1
-#define BOLTZMANN_1 (0.1736)
+#define BOLTZMANN_1 (0.20)
 #endif
 #ifndef BOLTZMANN_2
-#define BOLTZMANN_2 (0.0)
+#define BOLTZMANN_2 (-0.5)
 #endif
 #ifndef EVAL_PARAM_1
 #define EVAL_PARAM_1 (2)
@@ -53,7 +53,7 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
 #define EVAL_PARAM_4 (0.03)
 #endif
 #ifndef NBHD_PROB_1
-#define NBHD_PROB_1 (50)
+#define NBHD_PROB_1 (10)
 #endif
 #ifndef NBHD_PROB_2
 #define NBHD_PROB_2 (10)
@@ -62,7 +62,7 @@ template <typename T> ostream & operator << (ostream & out, vector<T> const & xs
 #define NBHD_PROB_3 (10)
 #endif
 #ifndef NBHD_PROB_4
-#define NBHD_PROB_4 (30)
+#define NBHD_PROB_4 (70)
 #endif
 
 
