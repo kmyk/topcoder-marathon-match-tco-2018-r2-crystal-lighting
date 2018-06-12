@@ -121,8 +121,8 @@ def main():
     # optimize
     from bayes_opt import BayesianOptimization  # https://pypi.org/project/bayesian-optimization/
     param_bounds = {
-        'BOLTZMANN_1': (0.0, 2.0),
-        'BOLTZMANN_2': (0.0, 1.0),
+        'BOLTZMANN_1': (0, 200),
+        'BOLTZMANN_2': (0, 100),
         'NBHD_PROB_1': (0, 100),
         'NBHD_PROB_2': (0, 30),
         'NBHD_PROB_3': (0, 30),
