@@ -89,7 +89,7 @@ forumにてRYBは減法混合の原色だが光は加法混合されるし実際
 
 雑貪欲 [60f38094b24f96927de73689a9edd68a5aa60d5a](https://github.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/commit/60f38094b24f96927de73689a9edd68a5aa60d5a)
 
-![11.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.60f38094b24f96927de73689a9edd68a5aa60d5a.png?token=ACGd-HrrN-fy38ORtN9iIzN1mi3fXaITks5bIlVdwA%3D%3D)
+![11.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.60f38094b24f96927de73689a9edd68a5aa60d5a.png)
 
 <details>
 <summary>順位表 60f38094b24f96927de73689a9edd68a5aa60d5a</summary>
@@ -132,11 +132,11 @@ MM100やR1で反省したのか実質無効なテストケースがない。
 
 とりあえず山登り: `afaf767668b306ab301cc2d6fbc57c85fbc48ac0`
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.afaf767668b306ab301cc2d6fbc57c85fbc48ac0.png?token=ACGd-Ni6CBPfYkXamzwHEbqs4PIFTOR7ks5bI1sCwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.afaf767668b306ab301cc2d6fbc57c85fbc48ac0.png)
 
 でもって1行変えて焼き鈍し `16ed8b060f755e3f389da36382b2df0d358025be`
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.16ed8b060f755e3f389da36382b2df0d358025be.png?token=ACGd-GGZu31ltdiqdlBKZoKFaBF4D3EYks5bI1sBwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.16ed8b060f755e3f389da36382b2df0d358025be.png)
 
 悪化してる悲しい
 
@@ -622,7 +622,7 @@ MM100やR1で反省したのか実質無効なテストケースがない。
 
 ### 2018年  6月  8日 金曜日 16:19:15 JST
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.hand.png?token=ACGd-NxOt_Dd0NDcjbPRQHJHtC_lTY5aks5bI2iowA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.hand.png)
 
 手で解きました。 現状は登って1700焼いても1900のところ手で2800。 だめすぎる。 貪欲が弱い。
 2色の光源を同時に置くような操作が必要か。
@@ -705,7 +705,7 @@ secondary水晶を部分的に照らすのに加点: [67fc04b90991224c993a1b31fe
 
 大成功。 seed = 11 で最高2900が出る。 左上の橙4個がきちんと照らされているのが分かる。
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.67fc04b90991224c993a1b31fe0c7dd87feef133.png?token=ACGd-B_uldsK6oRHi94DNuxB4Qy6YfLHks5bI3zdwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.67fc04b90991224c993a1b31fe0c7dd87feef133.png)
 
 しかし評価関数 [CrystalLighting.cpp#L310-L312](https://github.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/blob/67fc04b90991224c993a1b31fe0c7dd87feef133/CrystalLighting.cpp#L310-L312) の調整が難しい。 次の課題はこれか、単に高速化か。 しかしもう1手こう問題依存の改善を決めたいところではある。
 
@@ -1189,7 +1189,7 @@ heuristicsの改善として、局所性の利用。
 提出結果は15位。 差分更新前 610648.15 -> 748750.00 と上昇で人権感でてきた。
 予想 rating = 2216.56 / delta = 21.56 で赤期待。
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.7a4e3e979f6f912ef4994328f4b7b15aa3226c25.png?token=ACGd-KBY0aPlT28gHrc0crrTqt-S4r-fks5bJMdcwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.7a4e3e979f6f912ef4994328f4b7b15aa3226c25.png)
 
 <details>
 <summary>score表 7a4e3e979f6f912ef4994328f4b7b15aa3226c25</summary>
@@ -1618,7 +1618,7 @@ heuristicsの改善として、局所性の利用。
 後者がすごく効いた。
 すぐにやれるのは調整かなということで手を付けたのが幸運だった。
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.34f0eb09e304966ab4a0cc321483c7293ff481aa.png?token=ACGd-KpXlhfVqX_Gy4cCMndDguY0TYeDks5bJSLDwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.34f0eb09e304966ab4a0cc321483c7293ff481aa.png)
 
 提出したら8位。 多少は安心できる。
 
@@ -2802,7 +2802,7 @@ localになにかdaemonを置いてreverse tunnelなどすれば可能だが、�
 
 `6dbb15cbce4eab3e15461622c848132246f91283`
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.6dbb15cbce4eab3e15461622c848132246f91283.png?token=ACGd-PepabIcYYGmd05wtL4jliVay5V_ks5bJrZDwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.6dbb15cbce4eab3e15461622c848132246f91283.png)
 
 <details>
 <summary>score表 6dbb15cbce4eab3e15461622c848132246f91283</summary>
@@ -3527,7 +3527,7 @@ branchを切った後からmasterを伸ばしたとき、ここに書いてし�
 
 merge: [ca8cf82618c91d063cb29a8ef8305a6f6e306d3e0](https://github.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/commit/ca8cf82618c91d063cb29a8ef8305a6f6e306d3e0)
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.ca8cf82618c91d063cb29a8ef8305a6f6e306d3e.png?token=ACGd-Pn4c36SPFX1PYLOhnGKfV9dUxlSks5bJ6agwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.ca8cf82618c91d063cb29a8ef8305a6f6e306d3e.png)
 
 branchの構造が線形でなくなった記念。 こういうのが非自明になってくるとなんだか楽しい。 まあ無闇に混乱させるのは愚なのでcherry-pickとかしてできるだけ抑えてはいます。
 
@@ -4309,7 +4309,7 @@ Initializationで引かれた良さげなのを先取りして手で調整した
 
 </details>
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.f5baa9c00679a7f438eea66c8661bc10ef755e4d.png?token=ACGd-Nvs5s3OyTg5aIML0OLt-BnC96u0ks5bJ-F1wA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.f5baa9c00679a7f438eea66c8661bc10ef755e4d.png)
 
 
 ### 2018年  6月 12日 火曜日 03:08:40 JST
@@ -5372,7 +5372,7 @@ provisionalは100 seedsしか試さないのでそういうこともあるだろ
 
 </details>
 
-![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/documents/image/seed-11.60c5ec76bdf41089633240db30d0a444bceb6375.png?token=ACGd-NEssYsJylXL73nF4UBT4BY8Rqfpks5bKWWVwA%3D%3D)
+![](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r2-crystal-lighting/master/image/seed-11.60c5ec76bdf41089633240db30d0a444bceb6375.png)
 
 ### 2018年  6月 13日 水曜日 05:19:58 JST
 
