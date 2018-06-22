@@ -5539,49 +5539,135 @@ kurenai3110も今回で赤らしい。
 
 散逸しないうちに解法情報。 中身はまだちゃんと読んでないのでURLのみ
 
--   iwashi31's list: <https://twitter.com/iwashi31/lists/tco18mmr2>
--   <https://twitter.com/nico_shindannin/status/1007428937520050176>
--   <https://twitter.com/chokudai/status/1007428410992295936>
--   <https://twitter.com/chokudai/status/1007429709603397632>
--   <https://twitter.com/nico_shindannin/status/1007429336335413249>
--   <https://twitter.com/nico_shindannin/status/1007430650465402880>
--   <https://twitter.com/neetsdkasu/status/1007430673957711872>
--   <https://twitter.com/hoshi524/status/1007431851609165825>
--   <https://twitter.com/nico_shindannin/status/1007432769255845888>
--   <https://twitter.com/my316g/status/1007432846032584705>
--   <https://twitter.com/nico_shindannin/status/1007433383163543552>
--   <https://twitter.com/my316g/status/1007434201056989184>
--   <https://twitter.com/tomerun/status/1007434318484942850>
--   <https://twitter.com/nico_shindannin/status/1007433942184546304>
--   <https://twitter.com/my316g/status/1007435428901761024>
--   <https://twitter.com/nico_shindannin/status/1007435679247134721>
--   <https://twitter.com/hakomof/status/1007435033127211009>
--   <https://twitter.com/hoshi524/status/1007437751107530752>
--   <https://twitter.com/nico_shindannin/status/1007437515828019200>
--   <https://twitter.com/nico_shindannin/status/1007438407029538816>
--   <https://twitter.com/chokudai/status/1007438618124697600>
--   <https://twitter.com/tomerun/status/1007433976875646976>
--   <https://twitter.com/tomerun/status/1007434716696342534>
--   <https://twitter.com/y_kawano/status/1007447516529356801>
--   <https://twitter.com/kyuridenamida/status/1007447638986276864>
--   <https://twitter.com/kyuridenamida/status/1007448105707401216>
--   <https://twitter.com/takeo1116/status/1007449621348564993>
--   <https://twitter.com/kt_tenel/status/1007451512593793024>
--   <https://twitter.com/takeo1116/status/1007451046958882816>
--   <https://twitter.com/kyuridenamida/status/1007453267029180416>
--   <https://twitter.com/kosakkun/status/1007456374777712640>
--   <https://twitter.com/iwashi31/status/1007461874365915137>
--   <https://twitter.com/kosakkun/status/1007457043190386689>
--   <https://twitter.com/iwashi31/status/1007463959430029312>
--   <https://twitter.com/eris_c/status/1007463568403394560>
--   <https://twitter.com/ats5515/status/1007465408931041281>
--   <https://twitter.com/ats5515/status/1007466061652901888>
--   <https://twitter.com/ats5515/status/1007478849523683328>
--   <https://twitter.com/yowa/status/1007485135422304256>
--   <https://twitter.com/yowa/status/1007485135422304256>
--   <https://twitter.com/yowa/status/1007486107196354560>
--   <https://twitter.com/yowa/status/1007487441312182272>
--   <https://twitter.com/yowa/status/1007488027290042368>
--   <https://twitter.com/yowa/status/1007488960497512448>
--   <https://twitter.com/hoshi524/status/1007507284941926401>
--   <https://twitter.com/kosakkun/status/1007515562350505986>
+(下と重複のため削除)
+
+### 2018年  6月 20日 水曜日 23:54:33 JST
+
+祝 RedCoder
+
+ついでに期間被ってたCTF遠征でも2位
+
+### 2018年  6月 22日 金曜日 08:18:04 JST
+
+-   nika 1位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273816>
+	-   "Like eldidou, I do one big SA for half the time and then multiple small ones." だから逆じゃないの？ まったくわからん
+	-   "Moves are only adding/removing any item." 無理矢理置くを入れるので実質移動とのこと
+-   eldidou 2位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273811>
+	-   「全体でSAしてから12x12に分割してさらにSA」 逆では？
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273908>
+    -   "I think the key point is that when doing SA on small areas, only improvements are kept."
+-   hakomo 3位
+    -   <https://twitter.com/hakomof/status/1007435033127211009>
+        -   「パス上のモノを高々1つのぞいてパス上に高々1つ足す、を近傍」 
+	    -   単に上下左右にいくらかずらした。この方が手が速そう。1度は考えてるのになぜしなかった
+        -   「マスからのrayがどこにぶつかるかを取得O(1)更新O(N)にすると、近傍がO(1)に」
+            -   あっ
+        -   「半分完成している2色crystalのスコアを前半は1、終盤は-10に」
+	    -   連続でやった。離散にするのは思い付きもせず
+    -   図解 <https://twitter.com/hakomof/status/1007555182098436096>
+-   tourist 4位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273896>
+	-   "1) No value adjustment for two-color crystals." かつ "2) No SA on small areas (just a big one)." どうしてそれで4位なんだ
+	-   "To make up for lack of good ideas, I spent a lot of time on code optimization." えー
+-   CatalinT 5位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273819>
+	-   やはりだいたい同じに見えるが "I used HC as the initial solution." これだけは差分
+-   Psyho 6位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273776>
+	-   ほぼ同じことやったと思うが なぜ
+-   ats5515 7位
+    -   焼き鈍し <https://twitter.com/ats5515/status/1007465408931041281>
+    -   移動 <https://twitter.com/ats5515/status/1007466061652901888>
+    -   「各アイテムのコストを0から真値に線形に変化させた」 <https://twitter.com/ats5515/status/1007478849523683328>
+-   hoshi524 8位
+    -   「2段焼きなまし」 <https://twitter.com/hoshi524/status/1007431851609165825>
+    -   「1箇所しか空白がないとどうやってもスコアにならないので、...」 <https://twitter.com/hoshi524/status/1007507284941926401> これはやった
+    -   hakomoさんの図解に対する感想 <https://twitter.com/hoshi524/status/1007679710824808448>
+-   JacoCronje 9位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2274249>
+	-   "I did not use SA." 貪欲を反復する感じの不思議な解法
+-   tomerun 10位
+    -   <https://twitter.com/tomerun/status/1007434318484942850>
+        -   「「ランプを光に沿って移動させる」の遷移」
+        -   「2色クリスタルに1色だけ入っている状態の評価」
+        -   「操作する位置は単にランダムではなく、不要な光の経路上を優先」
+        -   「盤面サイズが小さいときは多スタート」
+            -   これまじ？
+    -   「はじめ無駄に実装重い方針とってしまって土日ずっとデバッグで終わってしまった」 <https://twitter.com/tomerun/status/1007434716696342534>
+    -   「最初厳密に評価O(1)をやろうとしてバグり、ほぼO(1)に書き直しました（光を辿る1歩目だけ直近の物体までジャンプする）」 (診断人さん放送)
+-   EvbCFfp1XB 16位
+    -   gif <https://twitter.com/EvbCFfp1XB/status/1007611234592518144> これやるべきだった
+    -   <http://spvyxgfbtewiazrl.doorblog.jp/archives/52118144.html>
+-   kosakkun 25位
+    -   焼き鈍し <https://twitter.com/kosakkun/status/1007456374777712640>
+    -   「どこかを起点に確定していけるならビームサーチとか使えるのかなあ」 <https://twitter.com/kosakkun/status/1007457043190386689>
+    -   「1 マス移動は考えてたのに試さなかった... 一番ダメなやつや反省... 」 <https://twitter.com/kosakkun/status/1007515562350505986>
+-   gorbunov 28位
+    -   <https://www.topcoder.com/blog/tco18-marathon-round-2-an-analysis/>
+-   kyuridenamida 29位
+    -   解法 <https://twitter.com/kyuridenamida/status/1007447638986276864>
+    -   「PQ使った貪欲」 <https://twitter.com/kyuridenamida/status/1007448105707401216> つまり雑な貪欲
+    -   「一週間有給休暇とってひたすらマラソンに打ち込むの、生活リズムが崩壊しまくってたけど学生の頃を思い出して楽しかった」 <https://twitter.com/kyuridenamida/status/1007454100013760514>
+    -   「実際の更新と近傍のスコア計算の回数の差について考えたことありますかって感じだった」 <https://twitter.com/kyuridenamida/status/1007453267029180416> そういえばない。だめ
+-   yowa 32位
+    -   焼き鈍し <https://twitter.com/yowa/status/1007485135422304256>
+    -   「4方向の行き先メモ化は3～5割ヒットしてたけど、10%くらいしか速くなんなかった。」 <https://twitter.com/yowa/status/1007486107196354560>
+    -   個数制限の緩和について <https://twitter.com/yowa/status/1007487441312182272>
+    -   「「そのマスに光が通ってるかどうか」のメモ、やってないや」 <https://twitter.com/yowa/status/1007488027290042368>
+    -   「「一定期間焼きなましでacceptされなかったら、known bestな状態に戻す」」 <https://twitter.com/yowa/status/1007488960497512448> もしかしてこれ重要ですか
+-   chokudai 33位
+    -   「バグりにバグってそれ以上のことをする余裕がなかった」 <https://twitter.com/chokudai/status/1007428410992295936> chokudaiさんでもそういうのあるのかという気持ち
+    -   「「スタートラインに立つ前に競技が終わった」って感じだ」 <https://twitter.com/chokudai/status/1007429709603397632>
+    -   <https://twitter.com/chokudai/status/1007438618124697600>
+	-   「tomerunさんとかhakomoさんが書いていることは一通りやっているはずなので」
+	-   「2000遷移で更新できなかった時に最適解にリセット、で爆発的に...」
+-   NobuMiu 37位
+    -   「自分自身に負けたかんじ」 <https://twitter.com/nico_shindannin/status/1007428937520050176> わかる
+    -   「なんの工夫もないベタのやつ」 <https://twitter.com/nico_shindannin/status/1007429336335413249>
+    -   「混乱要素が予想以上に多かった」 <https://twitter.com/nico_shindannin/status/1007432769255845888>
+    -   データ構造 <https://twitter.com/nico_shindannin/status/1007433383163543552>
+    -   「詰まったり、億劫になりにくい、コーディングの順番を考えないと」 <https://twitter.com/nico_shindannin/status/1007433942184546304> 気持ちは分かるが実装力で殴れるようになるべきでは
+    -   「１ランタンはあってたら評価高めなのと、光に沿って移動は予定リストにあったけど」 <https://twitter.com/nico_shindannin/status/1007435679247134721>
+    -   「そこも億劫であとまわし」 <https://twitter.com/nico_shindannin/status/1007437515828019200>
+    -   「今回取得O(1)がうまくいかないなぁって思ってたんだけど、なぜだったか思い出せん…」 <https://twitter.com/nico_shindannin/status/1007438407029538816>
+    -   [TopCoderでプログラムしてみた 第2394回 (TCO 18 Marathon Match Round 2 直後放送）](https://www.youtube.com/watch?v=Mo4WtjoPp_c)
+	-   loop回数の話、これちゃんと数値として意識してなかった気がする
+-   phyllo 41位
+    -   <http://phyllo-algo.hatenablog.com/entry/2018/06/21/002545>
+    -   意外な順位
+-   mugurelionut 44位
+    -   <http://apps.topcoder.com/forums/?module=Thread&threadID=919614&start=0&mc=15#2273894>
+	-   "I can contribute more with what didn't work, rather than what did (isn't it boring to read only about SA-based solutions? :) )." これすき
+	-   「"1) Beam Search" も "2) A kind of graph-based approach" も失敗で延長1日目でSA書いたら初手でこれらより良くて絶望」
+	-   SAの多点スタートの是非や採択率関数のarityを1でなく2にする可能性に言及してる
+-   y_kawano 47位
+    -   「皆もミラーの無限ループにハマったり、凝った実装にして後悔したりしててホッコリした」 <https://twitter.com/y_kawano/status/1007447516529356801> わかる (わかる)
+-   takeo1116 53位
+    -   「dancing links張るかってなった」 <https://twitter.com/takeo1116/status/1007449621348564993>
+    -   「この問題では...O(1)」 <https://twitter.com/takeo1116/status/1007451046958882816>
+    -   「俺より上位でミラーループバグ残ってる人5人くらいいるだろうから、...」 <https://twitter.com/takeo1116/status/1007906400163397633> すき
+    -   「障害物を鏡に変える/戻す遷移だけで...」 <https://twitter.com/takeo1116/status/1007455032583729153>
+-   eris_c 58位
+    -   「「次の状態」をどう定義したらいいかが全然わからなくて」 <https://twitter.com/eris_c/status/1007463568403394560>
+    -   「今回はバグってない実装をするのに精いっぱいな感じ」 <https://twitter.com/eris_c/status/1007460770144108544>
+    -   [TCO18 MM R2 - CrystalLighting - Togetter](https://togetter.com/li/1237526)
+-   iwashi31 69位
+    -   list: <https://twitter.com/iwashi31/lists/tco18mmr2>
+    -   <https://gitlab.com/iwashi31/CrystalLighting>
+	-    tagちゃんと付けてる
+    -   「自分の実装力と作業時間だと山登りしか書けなかった」 <https://twitter.com/iwashi31/status/1007463959430029312>
+-   kt_tenel 71位
+    -   解法 <https://twitter.com/kt_tenel/status/1007451512593793024>
+-   neetsdkasu 91位
+    -   「今回はダメすぎて、ヴィジュアライザぽいやつ作るくらいしかしなかった」 <https://twitter.com/neetsdkasu/status/1007430673957711872>
+    -   [memo.txt](https://gitlab.com/neetsdkasu/TCO2018-MarathonMatch-Round2-MySolution/blob/master/memo.txt) もっと良い順位とれてもおかしくなさそうな雰囲気ある
+-   my316g 94位
+    -   <https://twitter.com/my316g/status/1007432846032584705> つらそう
+    -   「...する実装に固執しすぎ...バグらせて死んだ」 <https://twitter.com/my316g/status/1007434201056989184>
+    -   「途中ナイーブな実装に切り替えていれば軽傷で済んだんだろうな」 <https://twitter.com/my316g/status/1007435428901761024>
+-   koyumeishi (エア参加)
+    -   <https://gist.github.com/koyumeishi/7b9d162f56a2e3b0ef898451f150d2e7> すき
+-   他
+    -   [Statistics - TopCoder Forum](https://apps.topcoder.com/forums/?module=Thread&threadID=919724&start=0) 全然順位変わってない。もっとミラーループで落ちると思ってたしそうでなくとも差がない
